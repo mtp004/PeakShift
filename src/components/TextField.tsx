@@ -20,18 +20,19 @@ function TextField({
 }: TextFieldProps) {
   return (
     <div className="mb-3">
-      <label htmlFor={id} className="form-label">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="text"
-        value={value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        className="form-control"
-        placeholder={placeholder}
-      />
+        <label htmlFor={id} className="form-label">
+            {label}
+        </label>
+
+        <input
+            id={id}
+            type="text"
+            value={value}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            className="form-control"
+            placeholder={placeholder}
+        />
     </div>
   );
 }
