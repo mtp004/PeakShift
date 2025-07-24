@@ -25,14 +25,15 @@ export type GeocodeResult = {
 };
 
 // Reusable async function to query Nominatim
-export async function fetchGeocode(address: string): Promise<GeocodeResult | null> {
+export async function fetchGeocode(address: string): Promise<GeocodeResult[] | null> {
   if (!address.trim()) return null;
 
   const params = new URLSearchParams({
     format: 'json',
     addressdetails: '1',
-    limit: '1',
+    limit: '2',
     q: address,
+    countrycodes: 'us'
   });
 
   const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
@@ -49,7 +50,7 @@ export async function fetchGeocode(address: string): Promise<GeocodeResult | nul
     }
 
     const data: GeocodeResult[] = await res.json();
-    return data.length > 0 ? data[0] : null;
+    return data.length > 0 ? data : null;
   } catch (error) {
     console.error('Geocode fetch error:', error);
     return null;
