@@ -26,7 +26,7 @@ type GeocodeProps = {
     };
     boundingbox: [string, string, string, string];
   };
-  onSelect: (result: GeocodeProps['geocodeResult']) => void; // Callback for report selection
+  onSelect: () => void; // Callback for report selection
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -48,7 +48,7 @@ const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect }) => {
         <button
           className="btn btn-outline-primary btn-sm fw-semibold flex-shrink-0"
           style={{height: '60px', width: '100px'}}
-          onClick={() => onSelect(geocodeResult)}
+          onClick={() => onSelect()}
           aria-label={`View reports for ${geocodeResult.display_name}`}
         >
           See reports →
