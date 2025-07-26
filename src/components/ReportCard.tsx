@@ -29,6 +29,7 @@ export function ReportCard({
               <small className="text-muted">Start Date(M/D/Y): </small>
               <span className="fw-medium">{formatDate(rateItem.startdate)}</span>
             </div>
+            <span className="fw-medium">Type: {rateItem.servicetype}</span>
             <span className="fw-medium">Company: {rateItem.utility}</span>
           </div>
         </div>

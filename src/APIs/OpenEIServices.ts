@@ -57,6 +57,7 @@ export async function fetchAddressElectricRates(
   url.searchParams.set('orderby', 'startdate');
   url.searchParams.set('direction', 'desc');
   url.searchParams.set('detail', 'full');
+
   try {
     const response = await fetch(url.toString());
     if (!response.ok) return null;
@@ -75,10 +76,40 @@ export async function processRatesResults(
   const result = await fetchAddressElectricRates(address);
   const latestDate = result?.items?.[0]?.startdate;
   
-  if(result?.items){
-    result.items = result?.items?.filter(item => 
-    item.is_default === true || item.startdate === latestDate
-    );
+  if (result?.items) {
+    const processedItems: RateItem[] = [];
+    
+    // Loop through all items
+    for (const item of result.items) {
+      // Check if item meets criteria
+      if ((item.startdate === latestDate || item.is_default === true)
+        && item.servicetype != "Delivery"
+      ) {
+        // Search for existing item with similar name
+        const existingIndex = processedItems.findIndex(
+          processedItem => processedItem.name === item.name
+        );
+        
+        if (existingIndex !== -1) {
+          // Found existing item - compare latest revision times
+          const existingItem = processedItems[existingIndex];
+          const currentLatestRevision = item.revisions[item.revisions.length - 1];
+          const existingLatestRevision = existingItem.revisions[existingItem.revisions.length - 1];
+          
+          if (currentLatestRevision > existingLatestRevision) {
+            // Current item has higher latest revision, replace existing
+            processedItems[existingIndex] = item;
+          }
+          // If current item doesn't have higher latest revision, continue (do nothing)
+        } else {
+          // No existing item found, add current item
+          processedItems.push(item);
+        }
+      }
+    }
+    
+    // Update result.items with processed items
+    result.items = processedItems;
   }
   
   callback(result);
