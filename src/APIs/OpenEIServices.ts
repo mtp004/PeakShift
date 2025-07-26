@@ -68,3 +68,19 @@ export async function fetchAddressElectricRates(
   }
 }
 
+export async function processRatesResults(
+  address: string,
+  callback: (result: RatesAPIResponse | null) => void
+): Promise<void> {
+  const result = await fetchAddressElectricRates(address);
+  const latestDate = result?.items?.[0]?.startdate;
+  
+  if(result?.items){
+    result.items = result?.items?.filter(item => 
+    item.is_default === true || item.startdate === latestDate
+    );
+  }
+  
+  callback(result);
+}
+

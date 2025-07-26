@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import SearchPage from './components/SearchPage';
-import Reports from './components/Reports';
+import ReportsPage from './components/ReportsPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 export function App(){
@@ -8,7 +8,7 @@ export function App(){
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<SearchPage />} />
-        <Route path="/report" element={<Reports />} />
+        <Route path="/report" element={<ReportsPage />} />
       </Routes>
     </BrowserRouter>
   );

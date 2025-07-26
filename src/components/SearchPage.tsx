@@ -28,7 +28,7 @@ function SearchPage() {
     }
   }, [address]);
 
-  function onSelectReport(result: GeocodeResult){
+  function onSelectAddress(result: GeocodeResult){
     navigate('/report', {state: {geocodeResult: result}});
   };
 
@@ -50,7 +50,7 @@ function SearchPage() {
               <AddressCard
                 key={result.place_id}
                 geocodeResult={result}
-                onSelect={() => onSelectReport(result)}
+                onSelect={() => onSelectAddress(result)}
               />
             ))}
             </div>
