@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
 import SearchPage from './components/SearchPage';
 import ReportsPage from './components/ReportsPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
