@@ -4,12 +4,11 @@ import AddressInput from './AddressInput';
 import AddressCard from './AddressCard';
 import { fetchGeocode } from '../APIs/GeocodeService';
 import { useNavigate } from 'react-router-dom';
-
 import type { GeocodeResult } from '../APIs/GeocodeService';
 
 function SearchPage() {
   const [address, setAddress] = useState('');
-  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null>(null);
+  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null | undefined>(null);
   const navigate = useNavigate();
 
   const debouncedQuery = useRef(
@@ -21,6 +20,7 @@ function SearchPage() {
 
   useEffect(() => {
     if (address.trim() !== '') {
+      setGeocodeResult(undefined);
       debouncedQuery(address);
     } else {
       debouncedQuery.cancel();
@@ -28,9 +28,10 @@ function SearchPage() {
     }
   }, [address]);
 
-  function onSelectAddress(result: GeocodeResult){
-    navigate('/report', {state: {geocodeResult: result}});
-  };
+  function onSelectAddress(address: string) {
+    const encodedAddress = encodeURIComponent(address);
+    navigate(`/report?address=${encodedAddress}`);
+  }
 
   return (
     <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
@@ -39,20 +40,26 @@ function SearchPage() {
         <h1 className="text-center mb-4">PeakShift - Electric Usage Optimizer</h1>
         <div className="position-relative">
           <AddressInput address={address} setAddress={setAddress} />
-          {geocodeResult && (
+          {geocodeResult !== null && (
             <div
-              className="dropdown-menu show p-0 border-0 shadow-sm"
+              className="dropdown-menu show p-0 border-0 shadow-sm w-100"
               style={{
                 zIndex: 100,
               }}
             >
-              {geocodeResult.map(result => (
-              <AddressCard
-                key={result.place_id}
-                geocodeResult={result}
-                onSelect={() => onSelectAddress(result)}
-              />
-            ))}
+              {geocodeResult === undefined ? (
+                <div className="d-flex justify-content-center py-3">
+                  <div className="spinner-border" role="status"></div>
+                </div>
+              ) : (
+                geocodeResult.map(result => (
+                  <AddressCard
+                    key={result.place_id}
+                    geocodeResult={result}
+                    onSelect={() => onSelectAddress(result.display_name)}
+                  />
+                ))
+              )}
             </div>
           )}
         </div>

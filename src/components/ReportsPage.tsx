@@ -1,23 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import type { GeocodeResult } from '../APIs/GeocodeService';
-import { fetchAddressElectricRates, processRatesResults, type RatesAPIResponse } from '../APIs/OpenEIServices';
-import { ReportCard } from './ReportCard';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
-type LocationState = {
-  geocodeResult: GeocodeResult;
-};
+import {processRatesResults, type RateItem, type RatesAPIResponse } from '../APIs/OpenEIServices';
+import { ReportCard } from './ReportCard';
 
 export function ReportsPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const state = location.state as LocationState;
-  const geocodeResult = state.geocodeResult;
+
+  const [params] = useSearchParams();
+  const address = params.get('address');
+  const decodedAddress = decodeURIComponent(address || '');
+  
   const [rateResponse, setRateResponse] = useState<RatesAPIResponse | null>(null);
 
+  function onSelectReport(report: RateItem) {
+    const encodedName = encodeURIComponent(report.name);
+
+    navigate(`/ratechart?address=${decodedAddress}&rate=${encodedName}`, {state: { report }});
+  };
+
   useEffect(() => {
-    if (geocodeResult) processRatesResults(geocodeResult.display_name, (result) => setRateResponse(result));
-  }, [geocodeResult]);
+    if (decodedAddress) processRatesResults(decodedAddress, (result) => setRateResponse(result));
+  }, [decodedAddress]);
 
   return (
     <div className="card shadow-sm p-0">
@@ -57,11 +62,14 @@ export function ReportsPage() {
               <ReportCard 
                 key={`${index}`}
                 rateItem={item}
-                onSelect={() => console.log("hello world")}
+                onSelect={() => onSelectReport(item)}
               />
             ));
           })()}
         </div>
+      </div>
+      <div className="text-center mt-4 text-muted small">
+        Data powered by <a href="https://openei.org" target="_blank" rel="noopener noreferrer">OpenEI</a>
       </div>
     </div>
   );
