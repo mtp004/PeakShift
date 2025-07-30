@@ -78,36 +78,75 @@ export async function processRatesResults(
   
   if (result?.items) {
     const processedItems: RateItem[] = [];
+    const deliveryItems: RateItem[] = [];
     
     // Loop through all items
     for (const item of result.items) {
       // Check if item meets criteria
-      if ((item.startdate === latestDate || item.is_default === true)
-        && item.servicetype != "Delivery"
-      ) {
+      if (item.servicetype != "Delivery") {
+        if(item.startdate === latestDate || item.is_default === true){
+          // Search for existing item with similar name
+          const existingIndex = processedItems.findIndex(
+            processedItem => processedItem.name === item.name
+          );
+          
+          if (existingIndex !== -1) {
+            // Found existing item - compare latest revision times
+            const existingItem = processedItems[existingIndex];
+            const currentLatestRevision = item.revisions[item.revisions.length - 1];
+            const existingLatestRevision = existingItem.revisions[existingItem.revisions.length - 1];
+            
+            if (currentLatestRevision > existingLatestRevision) {
+              // Current item has higher latest revision, replace existing
+              processedItems[existingIndex] = item;
+            }
+            // If current item doesn't have higher latest revision, continue (do nothing)
+          } else {
+            // No existing item found, add current item
+            processedItems.push(item);
+          }
+        }
+      } else{
         // Search for existing item with similar name
-        const existingIndex = processedItems.findIndex(
-          processedItem => processedItem.name === item.name
+        const existingIndex = deliveryItems.findIndex(
+          deliveryItem => deliveryItem.name === item.name
         );
         
         if (existingIndex !== -1) {
           // Found existing item - compare latest revision times
-          const existingItem = processedItems[existingIndex];
+          const existingItem = deliveryItems[existingIndex];
           const currentLatestRevision = item.revisions[item.revisions.length - 1];
           const existingLatestRevision = existingItem.revisions[existingItem.revisions.length - 1];
           
           if (currentLatestRevision > existingLatestRevision) {
             // Current item has higher latest revision, replace existing
-            processedItems[existingIndex] = item;
+            deliveryItems[existingIndex] = item;
           }
           // If current item doesn't have higher latest revision, continue (do nothing)
         } else {
           // No existing item found, add current item
-          processedItems.push(item);
+          deliveryItems.push(item);
         }
       }
     }
     
+    //Implement logic here
+    processedItems.forEach(processedItem => {
+      const matchingDeliveryItem = deliveryItems.find(d => d.name === processedItem.name);
+      if (matchingDeliveryItem?.energyratestructure && processedItem.energyratestructure) {
+        processedItem.energyratestructure.forEach((group, i) => {
+          if (matchingDeliveryItem.energyratestructure[i]?.[0]) {
+            group[0].rate -= matchingDeliveryItem.energyratestructure[i][0].rate;
+            if (group[0].adj !== undefined && matchingDeliveryItem.energyratestructure[i][0].adj !== undefined) {
+              group[0].adj -= matchingDeliveryItem.energyratestructure[i][0].adj;
+            }
+          }
+        });
+      }
+    });
+    
+    //Implement logic here
+
     // Update result.items with processed items
     result.items = processedItems;
   }
