@@ -10,6 +10,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { type RateItem, processRatesResults } from '../APIs/OpenEIServices';
+import {
+  saveBookmark,
+  removeBookmark,
+  isBookmarked,
+  type BookmarkedRate,
+} from '../APIs/BookmarkManager';
 
 const HOUR_TO_TIME = [
   '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM',
@@ -33,20 +39,45 @@ export function RateChart() {
   const [report, setReport] = useState<RateItem | null | undefined>(undefined);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isWeekend, setIsWeekend] = useState(currentIsWeekend);
+  const [bookmarked, setBookmarked] = useState(false);
+
+  const address = decodeURIComponent(params.get('address') || '');
+  const rateName = decodeURIComponent(params.get('rate') || '');
 
   useEffect(() => {
     if (location.state?.report) {
       setReport(location.state.report);
     } else {
-      const address = decodeURIComponent(params.get('address') || '');
-      const rate = decodeURIComponent(params.get('rate') || '');
-
       processRatesResults(address, (reports) => {
-        const match = reports?.items.find(r => r.name === rate) ?? null;
+        const match = reports?.items.find(r => r.name === rateName) ?? null;
         setReport(match);
       });
     }
-  }, [params, location.state]);
+  }, [params, location.state, address, rateName]);
+
+  useEffect(() => {
+    if (report) {
+      setBookmarked(isBookmarked(report.name));
+    }
+  }, [report]);
+
+  const handleBookmarkToggle = () => {
+    if (!report) return;
+
+    if (bookmarked) {
+      removeBookmark();
+      setBookmarked(false);
+    } else {
+      const bookmark: BookmarkedRate = {
+        id: report.name,
+        address: address,
+        dateBookmarked: new Date().toISOString(),
+        report: report
+      };
+      saveBookmark(bookmark);
+      setBookmarked(true);
+    }
+  };
 
   const backButton = (
     <button
@@ -55,14 +86,18 @@ export function RateChart() {
       onClick={() => window.history.back()}
       aria-label="Navigate back to reports page"
     >
-      ← Back
+      Back
     </button>
   );
+
+
 
   if (report === undefined) {
     return (
       <div className="card-body p-2">
-        {backButton}
+        <div className="d-flex align-items-center">
+          {backButton}
+        </div>
         <div className="d-flex justify-content-center">
           <div className="spinner-border" role="status"></div>
         </div>
@@ -73,7 +108,9 @@ export function RateChart() {
   if (report === null) {
     return (
       <div className="card-body p-2">
-        {backButton}
+        <div className="d-flex align-items-center">
+          {backButton}
+        </div>
         <div className="alert alert-info">
           No residential electric rates found for this address.
         </div>
@@ -89,9 +126,29 @@ export function RateChart() {
 
   return (
     <div className="card-body p-2">
-      {backButton}
+      <div className="d-flex align-items-center mb-3">
+        {backButton}
+        {report && (
+          <button
+            type="button"
+            className={`btn btn-sm fw-semibold ms-2 ${bookmarked ? 'btn-warning' : 'btn-outline-warning'}`}
+            onClick={handleBookmarkToggle}
+            aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
+            title={bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
+          >
+            {bookmarked ? '★ Bookmarked' : '☆ Bookmark'}
+          </button>
+        )}
+      </div>
 
-      <div className="row mb-4 mt-3">
+      {report && (
+        <div className="mb-3">
+          <h5 className="mb-1">{report.name}</h5>
+          <small className="text-muted">{report.utility} • {address}</small>
+        </div>
+      )}
+
+      <div className="row mb-4">
         <div className="col-auto">
           <label htmlFor="monthSelect" className="form-label fw-semibold">Month</label>
           <select

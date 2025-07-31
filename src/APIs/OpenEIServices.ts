@@ -42,6 +42,8 @@ export async function fetchAddressElectricRates(
 ): Promise<RatesAPIResponse | null> {
   const API_KEY = import.meta.env.VITE_OPENEI_API_KEY;
   
+  console.log("API key is:", API_KEY);
+  
   if (!API_KEY) {
     return null;
   }

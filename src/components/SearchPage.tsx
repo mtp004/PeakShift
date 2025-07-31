@@ -34,7 +34,7 @@ function SearchPage() {
   }
 
   return (
-    <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
+    <div className="h-100 d-flex justify-content-center align-items-center bg-light">
       {/* Main content */}
       <div className="container" style={{ maxWidth: '600px'}}>
         <h1 className="text-center mb-4">PeakShift - Electric Usage Optimizer</h1>
