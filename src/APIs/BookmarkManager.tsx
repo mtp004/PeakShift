@@ -1,5 +1,3 @@
-import { type RateItem } from '../APIs/OpenEIServices';
-
 const BOOKMARKS_KEY = 'rate_bookmark'; // singular key now
 
 export interface BookmarkedRate {
