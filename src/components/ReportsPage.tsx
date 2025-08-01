@@ -25,7 +25,7 @@ export function ReportsPage() {
   }, [decodedAddress]);
 
   return (
-    <div className="card shadow-sm p-0">
+    <div className="card-body p-0">
       <div className="card-body p-2">
         <button
           type="button"

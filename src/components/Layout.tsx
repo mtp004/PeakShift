@@ -1,18 +1,34 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { getBookmark } from '../APIs/BookmarkManager';
+
+const NavTab = {
+  MyData: 'MY_DATA',
+  Search: 'SEARCH',
+} as const;
+
+const highlightColor = '#430727ff';
+
+type NavTab = (typeof NavTab)[keyof typeof NavTab];
 
 export default function Layout() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<NavTab>(NavTab.MyData);
 
-  function handleMyDataClick(e: React.MouseEvent) {
-    e.preventDefault();
-    const bookmark = getBookmark();
-    if (bookmark) {
-      navigate('/ratechart', { state: { report: bookmark.report } });
-    } else {
+  function handleNavigationClick(active: NavTab) {
+    setActiveTab(active);
+
+    if (active === NavTab.MyData) {
+      const bookmark = getBookmark();
+      if (bookmark) {
+        navigate(`/ratechart?address=${bookmark.address}&rate=${bookmark.id}`);
+      } else {
+        navigate('/');
+      }
+    } else if (active === NavTab.Search) {
       navigate('/');
     }
-  };
+  }
 
   return (
     <div className="d-flex flex-column vh-100">
@@ -25,22 +41,31 @@ export default function Layout() {
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
         }}
       >
-        <Link
-          to="/"
-          className="navbar-brand fw-bold text-decoration-none"
-          style={{ color: '#dfd2d9ff' }}
-        >
-          Search
-        </Link>
+        <div className="d-flex align-items-center gap-3">
+          <button
+            onClick={() => handleNavigationClick(NavTab.MyData)}
+            className="navbar-brand fw-bold text-decoration-none p-2 border-0"
+            style={{
+              color: '#dfd2d9ff',
+              backgroundColor:
+                activeTab === NavTab.MyData ? highlightColor : 'transparent',
+            }}
+          >
+            My Data
+          </button>
 
-        <a
-          href="#"
-          onClick={handleMyDataClick}
-          className="navbar-brand fw-bold text-decoration-none"
-          style={{ color: '#dfd2d9ff' }}
-        >
-          My Data
-        </a>
+          <button
+            onClick={() => handleNavigationClick(NavTab.Search)}
+            className="navbar-brand fw-bold text-decoration-none p-2 border-0"
+            style={{
+              color: '#dfd2d9ff',
+              backgroundColor:
+                activeTab === NavTab.Search ? highlightColor : 'transparent',
+            }}
+          >
+            Search
+          </button>
+        </div>
       </nav>
 
       {/* Scrollable content area below navbar */}

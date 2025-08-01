@@ -6,7 +6,6 @@ export interface BookmarkedRate {
   id: string; // name of the rate
   address: string;
   dateBookmarked: string;
-  report: RateItem;
 }
 
 export const getBookmark = (): BookmarkedRate | null => {

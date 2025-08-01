@@ -40,6 +40,7 @@ export function RateChart() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isWeekend, setIsWeekend] = useState(currentIsWeekend);
   const [bookmarked, setBookmarked] = useState(false);
+  const noState = !location.state;
 
   const address = decodeURIComponent(params.get('address') || '');
   const rateName = decodeURIComponent(params.get('rate') || '');
@@ -72,14 +73,13 @@ export function RateChart() {
         id: report.name,
         address: address,
         dateBookmarked: new Date().toISOString(),
-        report: report
       };
       saveBookmark(bookmark);
       setBookmarked(true);
     }
   };
 
-  const backButton = (
+  const backButton = !noState && (
     <button
       type="button"
       className="btn btn-outline-secondary btn-sm fw-semibold"
@@ -91,7 +91,7 @@ export function RateChart() {
   );
 
 
-
+  
   if (report === undefined) {
     return (
       <div className="card-body p-2">
