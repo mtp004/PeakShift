@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.11.0",
     "bootstrap": "^5.3.7",
     "debounce": "^2.2.0",
     "lodash.debounce": "^4.0.8",

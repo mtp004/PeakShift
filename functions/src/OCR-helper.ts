@@ -1,4 +1,4 @@
-export interface OcrSpaceResponse {
+interface OcrSpaceResponse {
   ParsedResults?: {
     TextOverlay: any;
     TextOrientation: string;

@@ -43,7 +43,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
   }
 
   // OCR Configuration - You should store these as environment variables
-  const OCR_API_KEY = process.env.OCR_SPACE_API_KEY || '';
+  const OCR_API_KEY = 'K89233544288957';
   const OCR_API_URL = 'https://api.ocr.space/parse/image';
 
   // Variables to store file data
@@ -91,9 +91,6 @@ export const handleFileUpload = onRequest(async (req, res) => {
         });
         return;
       }
-
-      // Process the image with OCR
-      console.log(`Processing file: ${uploadedFileName} (${fileBuffer.length} bytes)`);
       
       const extractedText = await processImageWithOcr(
         fileBuffer,
@@ -102,12 +99,51 @@ export const handleFileUpload = onRequest(async (req, res) => {
         OCR_API_URL
       );
 
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `
+From the following OCR text, extract the full utility rate name. 
+
+The rate name is typically on its own line, but may include additional descriptors such as cycle numbers (e.g., "Cycle 17") on the same line. 
+
+Return only the full rate name exactly as it appears — including any numbers, codes, or cycles — and nothing else.
+
+Text:
+${extractedText}
+`
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      if (!geminiRes.ok) {
+        throw new Error(`Gemini API error ${geminiRes.status}`);
+      }
+
+      const geminiData = await geminiRes.json();
+      const modelText =
+        geminiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '(No result)';
+
       // Return successful response with extracted text
       res.status(200).json({
         success: true,
         filename: uploadedFileName,
         fileSize: fileBuffer.length,
         extractedText: extractedText,
+        utilityRateName: modelText,
         message: 'File processed successfully'
       });
 

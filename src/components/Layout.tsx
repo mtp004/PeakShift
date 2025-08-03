@@ -5,6 +5,7 @@ import { getBookmark } from '../APIs/BookmarkManager';
 const NavTab = {
   MyData: 'MY_DATA',
   Search: 'SEARCH',
+  Upload: 'UPLOAD'
 } as const;
 
 const highlightColor = '#430727ff';
@@ -27,6 +28,8 @@ export default function Layout() {
       }
     } else if (active === NavTab.Search) {
       navigate('/');
+    } else if (active === NavTab.Upload) {
+      navigate('/upload');
     }
   }
 
@@ -64,6 +67,18 @@ export default function Layout() {
             }}
           >
             Search
+          </button>
+
+          <button
+            onClick={() => handleNavigationClick(NavTab.Upload)}
+            className="navbar-brand fw-bold text-decoration-none p-2 border-0"
+            style={{
+              color: '#dfd2d9ff',
+              backgroundColor:
+                activeTab === NavTab.Upload ? highlightColor : 'transparent',
+            }}
+          >
+            Upload
           </button>
         </div>
       </nav>
