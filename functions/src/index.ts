@@ -7,7 +7,7 @@ initializeApp();
 
 export const handleFileUpload = onRequest(async (req, res) => {
   // Enable CORS
-  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Origin', 'https://peakshift-react.web.app');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
 

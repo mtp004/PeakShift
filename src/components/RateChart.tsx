@@ -16,6 +16,7 @@ import {
   isBookmarked,
   type BookmarkedRate,
 } from '../APIs/BookmarkManager';
+import { findPeakHours } from '../APIs/RateOptimizer';
 
 const HOUR_TO_TIME = [
   '12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM',
@@ -123,6 +124,7 @@ export function RateChart() {
     hour: HOUR_TO_TIME[hour],
     rate: parseFloat((report.energyratestructure?.[tierIndex]?.[0]?.rate || 0).toFixed(4)),
   })) ?? [];
+  const peakPeriods = findPeakHours(data);
 
   return (
     <div className="card-body p-2">
@@ -143,8 +145,8 @@ export function RateChart() {
 
       {report && (
         <div className="mb-3">
-          <h5 className="mb-1">{report.name}</h5>
-          <small className="text-muted">{report.utility} • {address}</small>
+          <h5 className="mb-1">Rate schedule for {address}</h5>
+          <small className="text-muted">{report.utility}</small>
         </div>
       )}
 
@@ -194,16 +196,34 @@ export function RateChart() {
           </div>
         </div>
       </div>
-
-      <ResponsiveContainer width="75%" height={400}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="hour" />
-          <YAxis label={{ value: 'Rate ($/kWh)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip />
-          <Bar dataKey="rate" fill="#0d6efd" />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="d-flex gap-3 w-75">
+        <div className="d-flex flex-column flex-grow-1">
+          <h5 className="text-center mb-1">Schedule name: {report.name}</h5>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hour" />
+              <YAxis label={{ value: 'Rate ($/kWh)', angle: -90, position: 'insideLeft' }} />
+              <Tooltip />
+              <Bar dataKey="rate" fill="#0d6efd" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="d-flex flex-column align-items-start ps-4">
+          <h6 className="text-danger mb-3">⚠️ Avoid usage in these Peak Hours:</h6>
+          <div className="d-flex flex-column gap-2">
+            {peakPeriods.length > 0 ? (
+              peakPeriods.map((period, index) => (
+                <div key={index} className="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2">
+                  {period.startHour} - {period.endHour}
+                </div>
+              ))
+            ) : (
+              <div className="text-muted fst-italic">No peak hours during daytime</div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

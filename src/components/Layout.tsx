@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getBookmark } from '../APIs/BookmarkManager';
 
 const NavTab = {
@@ -15,6 +15,10 @@ type NavTab = (typeof NavTab)[keyof typeof NavTab];
 export default function Layout() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<NavTab>(NavTab.MyData);
+
+  useEffect(() => {
+    handleNavigationClick(activeTab);
+  }, []);
 
   function handleNavigationClick(active: NavTab) {
     setActiveTab(active);

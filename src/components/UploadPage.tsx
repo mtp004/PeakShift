@@ -16,7 +16,16 @@ export default function UploadPage() {
   const [utilityRateName, setUtilityRateName] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target.files?.[0] || null);
+    const selectedFile = e.target.files?.[0] || null;
+
+    if (selectedFile && selectedFile.size > 1024*1024) {
+      setError('File size cannot exceed 1MB.');
+      setFile(null);
+      setUtilityRateName('');
+      return;
+    }
+
+    setFile(selectedFile);
     setError('');
     setUtilityRateName('');
   };
@@ -66,7 +75,7 @@ export default function UploadPage() {
       <div className="d-flex align-items-center mb-3">
         <input
           type="file"
-          accept="image/*, .pdf"
+          accept=".jpg, .jpeg, .png, .gif, .bmp, .pdf, .tif, .tiff"
           onChange={handleFileChange}
           className="form-control w-auto me-2"
         />

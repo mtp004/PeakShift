@@ -40,6 +40,7 @@ export async function processImageWithOcr(
   formDataForOcr.append('language', 'eng');
   formDataForOcr.append('isOverlayRequired', 'false');
   formDataForOcr.append('scale', 'true');
+  formDataForOcr.append('OCREngine', '2');
   
   // Create a Blob from the buffer for native FormData
     const uint8Array = new Uint8Array(fileBuffer);
