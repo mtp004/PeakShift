@@ -97,9 +97,6 @@ export default function UploadPage() {
       {error && (
         <span className="text-danger">{error}</span>
       )}
-      <p className="text-center mt-3 text-muted small">
-        * Disclaimer: AI can make mistakes. Please double-check the result.
-      </p>
     </div>
   );
 }

@@ -47,8 +47,8 @@ export const handleFileUpload = onRequest(async (req, res) => {
   const OCR_API_URL = 'https://api.ocr.space/parse/image';
 
   // Variables to store file data
-  let uploadedFileName: string | undefined;
-  let fileBuffer: Buffer | undefined;
+  let uploadedFileName: string 
+  let fileBuffer: Buffer
 
   // Create a new Busboy instance
   const busboy = Busboy({
@@ -74,15 +74,6 @@ export const handleFileUpload = onRequest(async (req, res) => {
   // Event listener for when all fields and files have been parsed
   busboy.on('finish', async () => {
     try {
-      if (!uploadedFileName || !fileBuffer) {
-        res.status(400).json({ 
-          success: false,
-          filename: uploadedFileName,
-          message: 'No file uploaded or file data not found'
-        });
-        return;
-      }
-
       // Check if it's an image file (optional validation)
       const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'pdf'];
       const fileExtension = uploadedFileName.toLowerCase().split('.').pop();
@@ -175,19 +166,18 @@ ${extractedText}
         message: 'File processed successfully'
       });
 
-    } catch (error) {
+    } catch (error: any) {
       // Return error response
       res.status(500).json({
         success: false,
         filename: uploadedFileName,
-        message: 'Failed to process file with OCR'
+        message: (error as Error).message
       });
     }
   });
 
   // Event listener for errors
   busboy.on('error', (err: any) => {
-    console.error('Busboy parsing error:', err);
     res.status(500).json({ 
       success: false,
       filename: uploadedFileName,

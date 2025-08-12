@@ -27,7 +27,7 @@ export function ReportsPage() {
   }, [decodedAddress]);
 
   return (
-    <div className="card-body p-0">
+    <div className="card-body p-0 d-flex flex-column h-100">
       <div className="card-body p-2">
         <div className="d-flex justify-content-between">
           <button
@@ -38,7 +38,6 @@ export function ReportsPage() {
           >
             Back
           </button>
-
           <div className="d-flex align-items-center gap-1">
             <span className="text-muted">
               Not sure which rate schedule you have? Try uploading your electric bill here →
@@ -59,39 +58,38 @@ export function ReportsPage() {
           </div>
         </div>
         <h5 className="mt-2 mb-3 fw-bold">Here's what we have found</h5>
-
-        <div>
-          {(() => {
-            if (!rateResponse) {
-              return (
-                <div className="d-flex justify-content-center">
-                  <div className="spinner-border" role="status"></div>
-                </div>
-              );
-            }
-            
-            if (rateResponse.items.length === 0) {
-              // No data found
-              return (
-                <div className="alert alert-info">
-                  No residential electric rates found for this address.
-                </div>
-              );
-            }
-            
-            // Has data - render ReportCards
-            return rateResponse.items.map((item, index) => (
-              <ReportCard 
-                key={`${index}`}
-                rateItem={item}
-                onSelect={() => onSelectReport(item)}
-              />
-            ));
-          })()}
-        </div>
       </div>
-      <div className="text-center mt-4 text-muted small">
-        Data powered by <a href="https://openei.org" target="_blank" rel="noopener noreferrer">OpenEI</a>
+
+      <div className="flex-grow-1 overflow-auto border p-1">
+        {(() => {
+          if (!rateResponse) {
+            return (
+              <div className="d-flex justify-content-center">
+                <div className="spinner-border" role="status"></div>
+              </div>
+            );
+          }
+
+          if (rateResponse.items.length === 0) {
+            return (
+              <div className="alert alert-info">
+                No residential electric rates found for this address.
+              </div>
+            );
+          }
+
+          // Has data - render ReportCards
+          return rateResponse.items.map((item, index) => (
+            <ReportCard
+              key={`${index}`}
+              rateItem={item}
+              onSelect={() => onSelectReport(item)}
+            />
+          ));
+        })()}
+        <div className="text-center mt-4 text-muted small p-2 flex-shrink-0">
+          Data powered by <a href="https://openei.org" target="_blank" rel="noopener noreferrer">OpenEI</a>
+        </div>
       </div>
     </div>
   );
