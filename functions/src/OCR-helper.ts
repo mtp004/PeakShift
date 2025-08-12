@@ -1,4 +1,4 @@
-interface OcrSpaceResponse {
+export interface OcrSpaceResponse {
   ParsedResults?: {
     TextOverlay: any;
     TextOrientation: string;
@@ -9,7 +9,7 @@ interface OcrSpaceResponse {
   }[];
   OcrExitCode: number;
   IsErroredOnProcessing: boolean;
-  ErrorMessage?: string[];
+  ErrorMessage: string[];
   ErrorDetails: string;
 }
 
@@ -32,7 +32,7 @@ export async function processImageWithOcr(
   filename: string,
   ocrApiKey: string,
   ocrApiUrl: string
-): Promise<string> {
+): Promise<OcrSpaceResponse> {
   // --- 1. Prepare Outbound Request to OCR.space ---
   // Using native FormData (available in Node.js 18+ and browsers)
   const formDataForOcr = new FormData();
@@ -62,26 +62,9 @@ export async function processImageWithOcr(
       const errorText = await response.text();
       throw new Error(`OCR.space API request failed: HTTP Status ${response.status} - ${errorText}`);
     }
-
-    // --- 4. Parse the JSON Response ---
     const ocrResult: OcrSpaceResponse = await response.json();
 
-    // --- 5. Extract and Validate the Parsed Text ---
-    if (
-      ocrResult.IsErroredOnProcessing ||
-      !ocrResult.ParsedResults ||
-      ocrResult.ParsedResults.length === 0
-    ) {
-      const errorMessage = ocrResult.ErrorMessage ? ocrResult.ErrorMessage.join(', ') : 'No text was found or an unknown error occurred.';
-      throw new Error(`OCR processing failed: ${errorMessage}`);
-    }
-
-    const parsedText = ocrResult.ParsedResults[0].ParsedText;
-    if (!parsedText || parsedText.trim() === '') {
-      throw new Error('OCR processed successfully, but no text was extracted from the image.');
-    }
-
-    return parsedText.trim();
+    return ocrResult;
   } catch (error) {
     throw error;
   }

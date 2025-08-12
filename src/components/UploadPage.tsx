@@ -50,14 +50,15 @@ export default function UploadPage() {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Server error ${response.status}: ${response.statusText}`);
+      const data: UploadResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(`Server error ${response.status}: ${data.message}`);
       }
 
-      const data: UploadResponse = await response.json();
       setUtilityRateName(data.utilityRateName);
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message);
     } finally {
       setUploading(false);
     }
