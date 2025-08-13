@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 interface UploadResponse {
-  success: boolean;
   filename: string;
   fileSize: number;
   extractedText: string;
@@ -50,11 +49,12 @@ export default function UploadPage() {
         body: formData,
       });
 
-      const data: UploadResponse = await response.json();
-
-      if (!data.success) {
-        throw new Error(`Server error ${response.status}: ${data.message}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
+
+      const data: UploadResponse = await response.json();
 
       setUtilityRateName(data.utilityRateName);
     } catch (err: any) {

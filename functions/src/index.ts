@@ -79,9 +79,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
       const fileExtension = uploadedFileName.toLowerCase().split('.').pop();
       
       if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-        res.status(400).json({ 
-          error: 'Invalid file type. Please upload an image or PDF file.' 
-        });
+        res.status(400).send('Invalid file type. Please upload an image or PDF file.');
         return;
       }
       
@@ -102,12 +100,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
         const errorMessage = ocrResult.ErrorMessage?.length > 0 
           ? ocrResult.ErrorMessage.join(', ')
           : 'Unknown OCR error';
-        res.status(400).json({
-          success: false,
-          filename: uploadedFileName,
-          fileSize: fileBuffer.length,
-          message: errorMessage
-        });
+        res.status(400).send(errorMessage);
         return;
       }
 
@@ -158,7 +151,6 @@ ${extractedText}
 
       // Return successful response with extracted text
       res.status(200).json({
-        success: true,
         filename: uploadedFileName,
         fileSize: fileBuffer.length,
         extractedText: extractedText,
@@ -168,21 +160,13 @@ ${extractedText}
 
     } catch (error: any) {
       // Return error response
-      res.status(500).json({
-        success: false,
-        filename: uploadedFileName,
-        message: (error as Error).message
-      });
+      res.status(500).send((error as Error).message);
     }
   });
 
   // Event listener for errors
   busboy.on('error', (err: any) => {
-    res.status(500).json({ 
-      success: false,
-      filename: uploadedFileName,
-      message: 'Error parsing file upload'
-    });
+    res.status(500).send('Error parsing file upload');
   });
 
   // Feed the buffered rawBody to busboy
