@@ -5,6 +5,7 @@ import SearchPage from './components/SearchPage';
 import ReportsPage from './components/ReportsPage';
 import RateChart from './components/RateChart';
 import UploadPage from './components/UploadPage';
+import { DataPage } from './components/DataPage';
 
 export function App() {
   return (
@@ -16,6 +17,7 @@ export function App() {
           <Route path="report" element={<ReportsPage />} />
           <Route path="ratechart" element={<RateChart />} />
           <Route path="upload" element={<UploadPage/>} />
+          <Route path="data" element={<DataPage/>} />
         </Route>
       </Routes>
     </BrowserRouter>

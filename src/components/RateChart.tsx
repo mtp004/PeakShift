@@ -41,7 +41,6 @@ export function RateChart() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isWeekend, setIsWeekend] = useState(currentIsWeekend);
   const [bookmarked, setBookmarked] = useState(false);
-  const noState = !location.state;
 
   const address = decodeURIComponent(params.get('address') || '');
   const rateName = decodeURIComponent(params.get('rate') || '');
@@ -59,7 +58,7 @@ export function RateChart() {
 
   useEffect(() => {
     if (report) {
-      setBookmarked(isBookmarked(report.name));
+      setBookmarked(isBookmarked(address, report.name));
     }
   }, [report]);
 
@@ -67,7 +66,7 @@ export function RateChart() {
     if (!report) return;
 
     if (bookmarked) {
-      removeBookmark();
+      removeBookmark(address, report.name);
       setBookmarked(false);
     } else {
       const bookmark: BookmarkedRate = {
@@ -80,7 +79,7 @@ export function RateChart() {
     }
   };
 
-  const backButton = !noState && (
+  const backButton = (
     <button
       type="button"
       className="btn btn-outline-secondary btn-sm fw-semibold"
@@ -128,12 +127,12 @@ export function RateChart() {
 
   return (
     <div className="card-body p-2">
-      <div className="d-flex align-items-center mb-3">
+      <div className="d-flex align-items-center mb-3 gap-2">
         {backButton}
         {report && (
           <button
             type="button"
-            className={`btn btn-sm fw-semibold ms-2 ${bookmarked ? 'btn-warning' : 'btn-outline-warning'}`}
+            className={`btn btn-sm fw-semibold ${bookmarked ? 'btn-warning' : 'btn-outline-warning'}`}
             onClick={handleBookmarkToggle}
             aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
             title={bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}

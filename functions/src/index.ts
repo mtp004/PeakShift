@@ -107,7 +107,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
       //Implement here
 
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
         {
           method: 'POST',
           headers: {
@@ -127,7 +127,7 @@ Analyze the following OCR text from a utility bill or rate schedule document.
     - It may be preceded or followed by keywords such as 'Rate Schedule', 'Service Type', or 'Billing Plan'.
     - It can contain alphanumeric codes and additional descriptors like 'Cycle 17'.
 - **Output:**
-    - Return the exact rate name as a single line of text.
+    - Return the exact rate name as a single line of text and nothing else.
     - If no such line item can be confidently identified, return the exact phrase: "No schedule name can be extracted".
 
 Text:

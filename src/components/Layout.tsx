@@ -1,6 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getBookmark } from '../APIs/BookmarkManager';
 
 const NavTab = {
   MyData: 'MY_DATA',
@@ -18,18 +17,13 @@ export default function Layout() {
 
   useEffect(() => {
     handleNavigationClick(activeTab);
-  }, []);
+  }, [activeTab]);
 
   function handleNavigationClick(active: NavTab) {
     setActiveTab(active);
 
     if (active === NavTab.MyData) {
-      const bookmark = getBookmark();
-      if (bookmark) {
-        navigate(`/ratechart?address=${bookmark.address}&rate=${bookmark.id}`);
-      } else {
-        navigate('/');
-      }
+      navigate('/data');
     } else if (active === NavTab.Search) {
       navigate('/');
     } else if (active === NavTab.Upload) {
@@ -89,7 +83,7 @@ export default function Layout() {
 
       {/* Scrollable content area below navbar */}
       <div className="flex-grow-1 overflow-auto">
-        <Outlet />
+        <Outlet context={{ setActiveTab }} />
       </div>
     </div>
   );

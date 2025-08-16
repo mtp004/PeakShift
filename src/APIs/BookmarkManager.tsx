@@ -1,4 +1,4 @@
-const BOOKMARKS_KEY = 'rate_bookmark'; // singular key now
+const BOOKMARKS_KEY = 'rate_bookmarks'; // plural key now
 
 export interface BookmarkedRate {
   id: string; // name of the rate
@@ -6,33 +6,37 @@ export interface BookmarkedRate {
   dateBookmarked: string;
 }
 
-export const getBookmark = (): BookmarkedRate | null => {
-  try {
-    const bookmark = localStorage.getItem(BOOKMARKS_KEY);
-    return bookmark ? JSON.parse(bookmark) : null;
-  } catch (error) {
-    console.error('Error loading bookmark:', error);
-    return null;
-  }
+export const getBookmarks = (): BookmarkedRate[] => {
+  const bookmarks = localStorage.getItem(BOOKMARKS_KEY);
+  return bookmarks ? JSON.parse(bookmarks) : [];
 };
 
 export const saveBookmark = (bookmark: BookmarkedRate): void => {
-  try {
-    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmark));
-  } catch (error) {
-    console.error('Error saving bookmark:', error);
+  const existingBookmarks = getBookmarks();
+  const existingIndex = existingBookmarks.findIndex(b => b.id === bookmark.id && b.address === bookmark.address);
+  
+  if (existingIndex >= 0) {
+    // Update existing bookmark
+    existingBookmarks[existingIndex] = bookmark;
+  } else {
+    // Add new bookmark
+    existingBookmarks.push(bookmark);
   }
+  
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(existingBookmarks));
 };
 
-export const removeBookmark = (): void => {
-  try {
-    localStorage.removeItem(BOOKMARKS_KEY);
-  } catch (error) {
-    console.error('Error removing bookmark:', error);
-  }
+export const removeBookmark = (address: string, id: string): void => {
+  const existingBookmarks = getBookmarks();
+  const filteredBookmarks = existingBookmarks.filter(b => !(b.id === id && b.address === address));
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(filteredBookmarks));
 };
 
-export const isBookmarked = (id: string): boolean => {
-  const bookmark = getBookmark();
-  return bookmark?.id === id;
+export const removeAllBookmarks = (): void => {
+  localStorage.removeItem(BOOKMARKS_KEY);
+};
+
+export const isBookmarked = (address: string, id: string): boolean => {
+  const bookmarks = getBookmarks();
+  return bookmarks.some(bookmark => bookmark.id === id && bookmark.address === address);
 };
