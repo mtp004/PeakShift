@@ -43,7 +43,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
   }
 
   // OCR Configuration - You should store these as environment variables
-  const OCR_API_KEY = 'K89233544288957';
+  const OCR_API_KEY = process.env.OCRSPACE_API_KEY || '';
   const OCR_API_URL = 'https://api.ocr.space/parse/image';
 
   // Variables to store file data
@@ -103,11 +103,10 @@ export const handleFileUpload = onRequest(async (req, res) => {
         res.status(400).send(errorMessage);
         return;
       }
-
-      //Implement here
-
+      
+      const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: {
