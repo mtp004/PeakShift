@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { compressImage } from '../APIs/ImageCompressor';
 
 interface UploadResponse {
   filename: string;
@@ -8,42 +9,62 @@ interface UploadResponse {
   message: string;
 }
 
-export default function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
+export default function App() {
+  const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState('');
   const [utilityRateName, setUtilityRateName] = useState('');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
-
-    if (selectedFile && selectedFile.size > 1024*1024) {
-      setError('File size cannot exceed 1MB.');
-      setFile(null);
-      setUtilityRateName('');
-      return;
-    }
-
-    setFile(selectedFile);
+    setCompressedFile(null);
     setError('');
     setUtilityRateName('');
+
+    if (!selectedFile) return;
+
+    if (selectedFile.size > 1024 * 1024) {
+      try {
+        setCompressing(true);
+        const compressed = await compressImage(selectedFile);
+
+        if (compressed) {
+          setCompressedFile(compressed);
+        } else {
+          setError('Dawg this file too large to compress under 1MB 💀');
+        }
+      } catch (err: any) {
+        setError(`Compression failed: ${err.message}`);
+      } finally {
+        setCompressing(false);
+      }
+    } else {
+      setCompressedFile(selectedFile);
+    }
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      setError('Please select a file to upload.');
+    if (!compressedFile) {
+      setError('Please wait for file compression to complete.');
+      return;
+    }
+
+    if (compressedFile.size === 0) {
+      setError('File is corrupted or empty. Please try again.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', compressedFile);
 
     try {
       setUploading(true);
       setError('');
       setUtilityRateName('');
 
-      // Step 1: Upload to your backend
       const response = await fetch('https://handlefileupload-s43aur27va-uc.a.run.app', {
         method: 'POST',
         body: formData,
@@ -55,7 +76,6 @@ export default function UploadPage() {
       }
 
       const data: UploadResponse = await response.json();
-
       setUtilityRateName(data.utilityRateName);
     } catch (err: any) {
       setError(err.message);
@@ -66,7 +86,6 @@ export default function UploadPage() {
 
   return (
     <div className="d-flex flex-column justify-content-center align-items-center h-100">
-      {/* Text at the beginning - now bigger and bolder */}
       <p className="text-center mb-3 fw-bold fs-4">
         Upload your electric bill to find your rate name(Cannot exceed 1MB)
       </p>
@@ -82,15 +101,23 @@ export default function UploadPage() {
         />
         <button
           onClick={handleUpload}
-          disabled={uploading || !file}
+          disabled={uploading || compressing || !compressedFile}
           className="btn btn-primary"
         >
           ✓
         </button>
       </div>
 
-      {uploading ? (
-          <div className="spinner-border spinner-border-sm" role="status"></div>
+      {compressing ? (
+          <div className="d-flex align-items-center">
+            <span>💔🥀 I said 1MB only, compressing nonetheless...</span>
+            <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+          </div>
+        ) : uploading ? (
+          <div className="d-flex align-items-center">
+            <span>Uploading...</span>
+            <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+          </div>
         ) : (
         <span>{utilityRateName}</span>
       )}

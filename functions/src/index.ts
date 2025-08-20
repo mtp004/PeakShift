@@ -107,7 +107,7 @@ export const handleFileUpload = onRequest(async (req, res) => {
       //Implement here
 
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=AIzaSyDW2LYFJwI2n3sdtkkHYQMwa1-HX5I-dCY`,
         {
           method: 'POST',
           headers: {
@@ -120,16 +120,14 @@ export const handleFileUpload = onRequest(async (req, res) => {
                   {
                     text: `
 Analyze the following OCR text from a utility bill or rate schedule document.
-
-- **Task:** Extract the full utility rate name.
-- **Characteristics of a Rate Name:**
-    - It is typically a distinct line item, often with a different font style (e.g., larger, bold).
-    - It may be preceded or followed by keywords such as 'Rate Schedule', 'Service Type', or 'Billing Plan'.
-    - It can contain alphanumeric codes and additional descriptors like 'Cycle 17'.
+- **Task:** Extract ONLY the utility rate name, excluding any prefixes or labels.
+- **Rate Name Characteristics:**
+  - Usually a distinct line item, often bold or larger font. However, if cycle/plan identifiers appear on the line immediately after the rate name, include them as part of the complete rate name
+  - May be near keywords like 'Rate Schedule', 'Service Type', 'Billing Plan', or 'Cycle'
+  - Can include alphanumeric identifiers (e.g., 'Cycle 17')
 - **Output:**
-    - Return the exact rate name as a single line of text and nothing else.
-    - If no such line item can be confidently identified, return the exact phrase: "No schedule name can be extracted".
-
+  - Return ONLY the rate name without prefixes like "Rate Schedule:" or "Service Type:"
+  - If none found, return: "No schedule name can be extracted"
 Text:
 ${extractedText}
 `

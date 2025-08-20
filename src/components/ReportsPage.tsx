@@ -14,7 +14,7 @@ export function ReportsPage() {
   const address = params.get('address');
   const decodedAddress = decodeURIComponent(address || '');
 
-  const [rateResponse, setRateResponse] = useState<RatesAPIResponse | null>(null);
+  const [rateResponse, setRateResponse] = useState<RatesAPIResponse | null | undefined>(undefined);
 
   function onSelectReport(report: RateItem) {
     const encodedName = encodeURIComponent(report.name);
