@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { initializeApp } from 'firebase-admin/app';
 import Busboy from 'busboy';
 import { processImageWithOcr, OcrSpaceResponse } from './OCR-helper';
+import { v2 as cloudinary } from 'cloudinary';
 
 initializeApp();
 
@@ -168,4 +169,54 @@ ${extractedText}
 
   // Feed the buffered rawBody to busboy
   busboy.end(req.rawBody);
+});
+
+//------------- CLOUDINARY API START FROM HERE -----------//
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+/**
+ * Delete a resource from Cloudinary
+ * @param publicId - The public ID of the resource to delete
+ */
+export const deleteCloudinaryResource = onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', 'https://peakshift-react.web.app');
+  res.set('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+
+  // Only allow DELETE requests
+  if (req.method !== 'DELETE') {
+    res.status(405).send('Method not allowed');
+    return;
+  }
+
+  try {
+    // Get publicId from query parameter or request body
+    const publicId = req.query.publicId as string || req.body?.publicId;
+    
+    if (!publicId) {
+      res.status(400).send('Public ID is required');
+      return;
+    }
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    
+    res.status(200).json({
+      message: 'Resource deleted successfully',
+      result: result
+    });
+
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
 });
