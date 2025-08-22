@@ -18,9 +18,8 @@ export function ReportsPage() {
 
   function onSelectReport(report: RateItem) {
     const encodedName = encodeURIComponent(report.name);
-
-    navigate(`/ratechart?address=${decodedAddress}&rate=${encodedName}`, {state: { report }});
-  };
+    navigate(`/search/ratechart?address=${decodedAddress}&rate=${encodedName}`, {state: { report }});
+  }
 
   useEffect(() => {
     if (decodedAddress) processRatesResults(decodedAddress, (result) => setRateResponse(result));

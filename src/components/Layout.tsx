@@ -12,19 +12,13 @@ const highlightColor = '#430727ff';
 type NavTab = (typeof NavTab)[keyof typeof NavTab];
 
 // Helper function to determine active tab from pathname
-function getActiveTabFromPath(pathname: string, state?: any): NavTab {
-  if (pathname === '/data') {
+function getActiveTabFromPath(pathname: string): NavTab {
+  if (pathname.startsWith('/data')) {
     return NavTab.MyData;
-  } else if (pathname === '/upload') {
+  } else if (pathname.startsWith('/upload')) {
     return NavTab.Upload;
-  } else if (pathname === '/ratechart') {
-    // If we have state indicating we came from bookmarks, keep "My Data" active
-    if (state?.fromBookmarks) {
-      return NavTab.MyData;
-    }
-    return NavTab.Search;
   } else {
-    // Default to Search for '/', '/report', and any other paths
+    // Default to Search for '/', '/search', and any other paths
     return NavTab.Search;
   }
 }
@@ -35,14 +29,14 @@ export default function Layout() {
   
   // Initialize activeTab based on current location
   const [activeTab, setActiveTab] = useState<NavTab>(() => 
-    getActiveTabFromPath(location.pathname, location.state)
+    getActiveTabFromPath(location.pathname)
   );
 
   // Update activeTab when location changes (but don't navigate)
   useEffect(() => {
-    const newActiveTab = getActiveTabFromPath(location.pathname, location.state);
+    const newActiveTab = getActiveTabFromPath(location.pathname);
     setActiveTab(newActiveTab);
-  }, [location.pathname, location.state]);
+  }, [location.pathname]);
 
   function handleNavigationClick(active: NavTab) {
     setActiveTab(active);

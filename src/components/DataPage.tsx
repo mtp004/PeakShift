@@ -12,9 +12,7 @@ export function DataPage() {
   const navigate = useNavigate();
 
   const handleViewChart = (bookmark: BookmarkedRate) => {
-    navigate(`/ratechart?address=${bookmark.address}&rate=${bookmark.id}`, {
-        state: { fromBookmarks: true }
-    });
+    navigate(`/data/ratechart?address=${bookmark.address}&rate=${bookmark.id}`);
 };
 
   const handleRemoveBookmark = (bookmark: BookmarkedRate) => {

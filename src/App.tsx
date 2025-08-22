@@ -13,11 +13,22 @@ export function App() {
       <Routes>
         {/* Wrap all routes in Layout */}
         <Route path="/" element={<Layout />}>
+          {/* Search flow routes */}
           <Route index element={<SearchPage />} />
+          <Route path="search/report" element={<ReportsPage />} />
+          <Route path="search/ratechart" element={<RateChart />} />
+          
+          {/* My Data flow routes */}
+          <Route path="data" element={<DataPage />} />
+          <Route path="data/ratechart" element={<RateChart />} />
+          
+          {/* Upload flow routes */}
+          <Route path="upload" element={<UploadPage />} />
+          <Route path="upload/ratechart" element={<RateChart />} />
+          
+          {/* Legacy routes for backward compatibility (optional) */}
           <Route path="report" element={<ReportsPage />} />
           <Route path="ratechart" element={<RateChart />} />
-          <Route path="upload" element={<UploadPage/>} />
-          <Route path="data" element={<DataPage/>} />
         </Route>
       </Routes>
     </BrowserRouter>

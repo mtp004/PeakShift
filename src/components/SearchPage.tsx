@@ -30,7 +30,7 @@ function SearchPage() {
 
   function onSelectAddress(address: string) {
     const encodedAddress = encodeURIComponent(address);
-    navigate(`/report?address=${encodedAddress}`);
+    navigate(`/search/report?address=${encodedAddress}`);
   }
 
   return (
