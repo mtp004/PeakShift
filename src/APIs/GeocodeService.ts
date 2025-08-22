@@ -25,8 +25,8 @@ export type GeocodeResult = {
 };
 
 // Reusable async function to query Nominatim
-export async function fetchGeocode(address: string): Promise<GeocodeResult[] | null> {
-  if (!address.trim()) return null;
+export async function fetchGeocode(address: string): Promise<GeocodeResult[]> {
+  if (!address.trim()) return [];
 
   const params = new URLSearchParams({
     format: 'json',
@@ -50,9 +50,9 @@ export async function fetchGeocode(address: string): Promise<GeocodeResult[] | n
     }
 
     const data: GeocodeResult[] = await res.json();
-    return data.length > 0 ? data : null;
+    return data; // Always return the array, even if empty
   } catch (error) {
     console.error('Geocode fetch error:', error);
-    return null;
+    return []; // Return empty array on error
   }
 }

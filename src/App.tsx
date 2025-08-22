@@ -25,10 +25,6 @@ export function App() {
           {/* Upload flow routes */}
           <Route path="upload" element={<UploadPage />} />
           <Route path="upload/ratechart" element={<RateChart />} />
-          
-          {/* Legacy routes for backward compatibility (optional) */}
-          <Route path="report" element={<ReportsPage />} />
-          <Route path="ratechart" element={<RateChart />} />
         </Route>
       </Routes>
     </BrowserRouter>

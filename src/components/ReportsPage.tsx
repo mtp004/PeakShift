@@ -26,7 +26,7 @@ export function ReportsPage() {
   }, [decodedAddress]);
 
   return (
-    <div className="card-body p-0 d-flex flex-column h-100">
+    <div className="card-body p-0 d-flex flex-column">
       <div className="card-body p-2">
         <div className="d-flex justify-content-between">
           <button
