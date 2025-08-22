@@ -209,7 +209,9 @@ export const deleteCloudinaryResource = onRequest(async (req, res) => {
       return;
     }
 
-    const result = await cloudinary.uploader.destroy(publicId);
+    const result = await cloudinary.uploader.destroy(publicId, {
+      invalidate: true
+    });
     
     res.status(200).json({
       message: 'Resource deleted successfully',

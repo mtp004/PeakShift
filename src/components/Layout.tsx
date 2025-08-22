@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const NavTab = {
@@ -11,13 +11,38 @@ const highlightColor = '#430727ff';
 
 type NavTab = (typeof NavTab)[keyof typeof NavTab];
 
+// Helper function to determine active tab from pathname
+function getActiveTabFromPath(pathname: string, state?: any): NavTab {
+  if (pathname === '/data') {
+    return NavTab.MyData;
+  } else if (pathname === '/upload') {
+    return NavTab.Upload;
+  } else if (pathname === '/ratechart') {
+    // If we have state indicating we came from bookmarks, keep "My Data" active
+    if (state?.fromBookmarks) {
+      return NavTab.MyData;
+    }
+    return NavTab.Search;
+  } else {
+    // Default to Search for '/', '/report', and any other paths
+    return NavTab.Search;
+  }
+}
+
 export default function Layout() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<NavTab>(NavTab.MyData);
+  const location = useLocation();
+  
+  // Initialize activeTab based on current location
+  const [activeTab, setActiveTab] = useState<NavTab>(() => 
+    getActiveTabFromPath(location.pathname, location.state)
+  );
 
+  // Update activeTab when location changes (but don't navigate)
   useEffect(() => {
-    handleNavigationClick(activeTab);
-  }, [activeTab]);
+    const newActiveTab = getActiveTabFromPath(location.pathname, location.state);
+    setActiveTab(newActiveTab);
+  }, [location.pathname, location.state]);
 
   function handleNavigationClick(active: NavTab) {
     setActiveTab(active);

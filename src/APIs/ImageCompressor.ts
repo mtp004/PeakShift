@@ -27,19 +27,15 @@ export const compressImage = async (file: File): Promise<File | null> => {
     const qualityLevels = [90, 80, 70, 60, 50];
     for (const quality of qualityLevels) {
       const optimizedUrl = `https://res.cloudinary.com/peakshift/image/upload/c_limit,w_2000,h_2000,e_grayscale,e_contrast:40,e_sharpen:100,q_${quality}/${publicId}`;
-      const headResponse = await fetch(optimizedUrl, { method: 'HEAD' });
-      if (!headResponse.ok) {
-        continue;
-      }
-      
-      const contentLength = headResponse.headers.get('Content-Length');
-      if (!contentLength || parseInt(contentLength) > 1024 * 1024) {
-        continue;
-      }
-      
-      // Size looks good, download the actual image
+      // Fetch the actual image directly
       const response = await fetch(optimizedUrl);
       if (!response.ok) {
+        continue;
+      }
+      
+      // Check content length from the response headers
+      const contentLength = response.headers.get('Content-Length');
+      if (!contentLength || parseInt(contentLength) > 1024 * 1024) {
         continue;
       }
       
@@ -47,6 +43,7 @@ export const compressImage = async (file: File): Promise<File | null> => {
       deleteResource(publicId).catch(error => {
         console.warn('Failed to clean up after successful compression:', error);
       });
+      
       return new File([blob], file.name, { type: originalMimeType });
     }
 
