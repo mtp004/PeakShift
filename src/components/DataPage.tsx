@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { getBookmarks, removeBookmark, type BookmarkedRate } from "../APIs/BookmarkManager";
 import { useOutletContext, useNavigate } from "react-router-dom";
+import { NavTab } from './Layout';
 
 type LayoutContextType = {
-  setActiveTab: (tab: "MY_DATA" | "SEARCH" | "UPLOAD") => void;
+  handleNavigationClick: (tab: string) => void;
 };
 
 export function DataPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkedRate[]>(getBookmarks());
-  const { setActiveTab } = useOutletContext<LayoutContextType>();
+  const { handleNavigationClick } = useOutletContext<LayoutContextType>();
   const navigate = useNavigate();
 
   const handleViewChart = (bookmark: BookmarkedRate) => {
@@ -64,7 +65,8 @@ export function DataPage() {
                 </p>
                 <button
                     className="btn btn-primary mt-2"
-                    onClick={() => setActiveTab("SEARCH")}
+                    onClick={() => {
+                        handleNavigationClick(NavTab.Search)}}
                     >
                     Search Rates
                 </button>

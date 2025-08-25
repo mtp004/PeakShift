@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-const NavTab = {
+export const NavTab = {
   MyData: 'MY_DATA',
   Search: 'SEARCH',
   Upload: 'UPLOAD'
@@ -102,7 +102,7 @@ export default function Layout() {
 
       {/* Scrollable content area below navbar */}
       <div className="flex-grow-1 overflow-auto">
-        <Outlet context={{ setActiveTab }} />
+        <Outlet context={{ handleNavigationClick }} />
       </div>
     </div>
   );

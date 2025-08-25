@@ -9,14 +9,16 @@ interface UploadResponse {
   message: string;
 }
 
-export default function App() {
+interface UploadPageProps {
+  backgroundClass?: string;
+}
+
+export default function UploadPage({ backgroundClass = 'bg-white' }: UploadPageProps) {
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState('');
   const [utilityRateName, setUtilityRateName] = useState('');
-
-
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -30,7 +32,6 @@ export default function App() {
       try {
         setCompressing(true);
         const compressed = await compressImage(selectedFile);
-
         if (compressed) {
           setCompressedFile(compressed);
         } else {
@@ -85,7 +86,9 @@ export default function App() {
   };
 
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center h-100">
+    <div 
+      className={`d-flex flex-column justify-content-center align-items-center h-100 p-2 ${backgroundClass}`}
+    >
       <p className="text-center mb-3 fw-bold fs-4">
         Upload your electric bill to find your rate name(Cannot exceed 1MB)
       </p>
@@ -107,18 +110,17 @@ export default function App() {
           ✓
         </button>
       </div>
-
       {compressing ? (
-          <div className="d-flex align-items-center">
-            <span>💔🥀 I said 1MB only, compressing nonetheless...</span>
-            <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-          </div>
-        ) : uploading ? (
-          <div className="d-flex align-items-center">
-            <span>Uploading...</span>
-            <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-          </div>
-        ) : (
+        <div className="d-flex align-items-center">
+          <span>💔🥀 I said 1MB only, compressing nonetheless...</span>
+          <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+        </div>
+      ) : uploading ? (
+        <div className="d-flex align-items-center">
+          <span>Uploading...</span>
+          <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+        </div>
+      ) : (
         <span>{utilityRateName}</span>
       )}
       {error && (

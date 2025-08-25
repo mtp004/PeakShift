@@ -26,8 +26,8 @@ export function ReportsPage() {
   }, [decodedAddress]);
 
   return (
-    <div className="card-body p-0 d-flex flex-column">
-      <div className="card-body p-2">
+    <div className="card-body p-0 d-flex flex-column h-100">
+      <div className="p-2" style={{ borderBottom: '1px solid #ccc' }}>
         <div className="d-flex justify-content-between">
           <button
             type="button"
@@ -50,8 +50,8 @@ export function ReportsPage() {
               >
                 Upload
               </button>
-              <div className="dropdown-menu p-2">
-                <UploadPage />
+              <div className="dropdown-menu p-0">
+                <UploadPage backgroundClass="bg-body-secondary" />
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@ export function ReportsPage() {
         <h5 className="mt-2 mb-3 fw-bold">Here's what we have found</h5>
       </div>
 
-      <div className="flex-grow-1 overflow-auto border p-1">
+      <div className="flex-grow-1 overflow-auto p-1">
         {(() => {
           if (!rateResponse) {
             return (
