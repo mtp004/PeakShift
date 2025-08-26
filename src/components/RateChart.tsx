@@ -1,5 +1,6 @@
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Tooltip as GuideTooltip } from './Tooltip';
 import {
   BarChart,
   Bar,
@@ -79,6 +80,18 @@ export function RateChart() {
     }
   };
 
+  const helpTooltip = (
+  <>
+    <div className="fw-bold mb-2">How to read your rate chart:</div>
+    <ul className="mb-2 ps-3">
+      <li>The bar chart shows your electric rates by hour for the selected month and day type.</li>
+      <li>Weekdays and weekends may have different schedules — use the toggle to switch.</li>
+      <li>Peak hours are highlighted on the right — try to avoid using high-energy appliances during these times.</li>
+      <li>You can bookmark your rate schedule using the "Bookmark" button for quick access later.</li>
+    </ul>
+  </>
+);
+
   const backButton = (
     <button
       type="button"
@@ -94,7 +107,7 @@ export function RateChart() {
   
   if (report === undefined) {
     return (
-      <div className="card-body p-2">
+      <div className="p-2">
         <div className="d-flex align-items-center">
           {backButton}
         </div>
@@ -107,7 +120,7 @@ export function RateChart() {
 
   if (report === null) {
     return (
-      <div className="card-body p-2">
+      <div className="p-2">
         <div className="d-flex align-items-center">
           {backButton}
         </div>
@@ -126,7 +139,11 @@ export function RateChart() {
   const peakPeriods = findPeakHours(data);
 
   return (
-    <div className="card-body p-2">
+    <div className="p-2 position-relative">
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <GuideTooltip tooltip={helpTooltip} />
+      </div>
+
       <div className="d-flex align-items-center mb-3 gap-2">
         {backButton}
         {report && (
@@ -195,10 +212,10 @@ export function RateChart() {
           </div>
         </div>
       </div>
-      <div className="d-flex gap-3 w-75">
+      <div className="d-flex gap-3" style={{maxWidth: '1000px'}}>
         <div className="d-flex flex-column flex-grow-1">
           <h5 className="text-center mb-1">Schedule name: {report.name}</h5>
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer height={400}>
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="hour" />

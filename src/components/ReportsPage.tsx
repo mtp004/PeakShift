@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import UploadPage from './UploadPage';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { Tooltip } from './Tooltip';
 
 import {processRatesResults, type RateItem, type RatesAPIResponse } from '../APIs/OpenEIServices';
 import { ReportCard } from './ReportCard';
@@ -25,8 +26,20 @@ export function ReportsPage() {
     if (decodedAddress) processRatesResults(decodedAddress, (result) => setRateResponse(result));
   }, [decodedAddress]);
 
+  const helpTooltip = (
+  <>
+    <div className="fw-bold mb-2">How to read your rate reports:</div>
+    <ul className="mb-2 ps-3">
+      <li>Each report shows a residential electric rate schedule for your address</li>
+      <li>Click "Select" on a report to view detailed usage charts and rate comparisons</li>
+      <li>If you are unsure which rate applies, you can upload your electric bill using the "Upload" button</li>
+      <li>Use the charts to identify high-cost periods and optimize your electricity usage</li>
+    </ul>
+  </>
+);
+
   return (
-    <div className="card-body p-0 d-flex flex-column h-100">
+    <div className="card-body p-0 d-flex flex-column h-100 position-relative">
       <div className="p-2" style={{ borderBottom: '1px solid #ccc' }}>
         <div className="d-flex justify-content-between">
           <button
@@ -51,12 +64,16 @@ export function ReportsPage() {
                 Upload
               </button>
               <div className="dropdown-menu p-0">
-                <UploadPage backgroundClass="bg-body-secondary" />
+                <UploadPage enableTooltip={false} backgroundClass="bg-body-secondary" />
               </div>
             </div>
           </div>
         </div>
-        <h5 className="mt-2 mb-3 fw-bold">Here's what we have found</h5>
+
+        <div className="d-flex justify-content-between mt-3">
+          <h4 className="fw-bold">Here's what we have found</h4>
+          <Tooltip tooltip={helpTooltip} />
+        </div>
       </div>
 
       <div className="flex-grow-1 overflow-auto p-1">

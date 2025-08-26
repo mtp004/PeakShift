@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import debounce from 'lodash.debounce';
 import AddressInput from './AddressInput';
 import AddressCard from './AddressCard';
+import { Tooltip } from './Tooltip';
 import { fetchGeocode } from '../APIs/GeocodeService';
 import { useNavigate } from 'react-router-dom';
 import type { GeocodeResult } from '../APIs/GeocodeService';
@@ -11,7 +12,7 @@ function SearchPage() {
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  
   const debouncedQuery = useRef(
     debounce(async (addr: string) => {
       setIsLoading(true);
@@ -38,8 +39,25 @@ function SearchPage() {
     navigate(`/search/report?address=${encodedAddress}`);
   }
 
+  const helpTooltip = (
+    <>
+      <div className="fw-bold mb-2">How to use PeakShift:</div>
+      <ul className="mb-2 ps-3">
+        <li>Enter your complete address in the search box</li>
+        <li>Select your address from the dropdown suggestions</li>
+        <li>View your personalized electric usage optimization report</li>
+        <li>Find the best times to use high-energy appliances</li>
+      </ul>
+    </>
+  );
+
   return (
-    <div className="h-100 d-flex justify-content-center align-items-center bg-light">
+    <div className="h-100 d-flex justify-content-center align-items-center bg-light position-relative">
+      {/* Tooltip Component */}
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <Tooltip tooltip={helpTooltip} />
+      </div>
+      
       {/* Main content */}
       <div className="container" style={{ maxWidth: '600px'}}>
         <h1 className="text-center mb-4">PeakShift - Electric Usage Optimizer</h1>

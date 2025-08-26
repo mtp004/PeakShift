@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { compressImage } from '../APIs/ImageCompressor';
+import { Tooltip } from './Tooltip';
 
 interface UploadResponse {
   filename: string;
@@ -10,10 +11,23 @@ interface UploadResponse {
 }
 
 interface UploadPageProps {
+  enableTooltip?: Boolean;
   backgroundClass?: string;
 }
 
-export default function UploadPage({ backgroundClass = 'bg-white' }: UploadPageProps) {
+const helpTooltip = (
+  <>
+    <div className="fw-bold mb-2">How to use PeakShift:</div>
+    <ul className="mb-2 ps-3">
+      <li>Click "Choose File" to select your electric bill (Accepted filetypes: .pdf, .jpeg, .png, .jpg, .gif, .bmp, .tif, .tiff)</li>
+      <li>If the file is larger than 1MB, it will automatically be compressed</li>
+      <li>Click the ✓ button to upload your bill</li>
+      <li>Wait for the upload to complete and view your utility rate name</li>
+    </ul>
+  </>
+);
+
+export default function UploadPage({ enableTooltip = true, backgroundClass = 'bg-white' }: UploadPageProps) {
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [compressing, setCompressing] = useState(false);
@@ -87,15 +101,21 @@ export default function UploadPage({ backgroundClass = 'bg-white' }: UploadPageP
 
   return (
     <div 
-      className={`d-flex flex-column justify-content-center align-items-center h-100 p-2 ${backgroundClass}`}
+      className={`d-flex flex-column justify-content-center align-items-center h-100 p-2 position-relative ${backgroundClass}`}
     >
+      {enableTooltip && (
+        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+          <Tooltip tooltip={helpTooltip} />
+        </div>
+      )}
+
       <p className="text-center mb-3 fw-bold fs-4">
         Upload your electric bill to find your rate name(Cannot exceed 1MB)
       </p>
       <p className="text-center mt-3 text-muted small">
         Accepted filetypes: .pdf, .jpeg, .png, .jpg
       </p>
-      <div className="d-flex align-items-center mb-3">
+      <div className="d-flex justify-content-center mb-3 w-100">
         <input
           type="file"
           accept=".jpg, .jpeg, .png, .gif, .bmp, .pdf, .tif, .tiff"
