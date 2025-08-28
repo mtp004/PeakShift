@@ -41,13 +41,27 @@ function SearchPage() {
 
   const helpTooltip = (
     <>
-      <div className="fw-bold mb-2">How to use PeakShift:</div>
-      <ul className="mb-2 ps-3">
-        <li>Enter your complete address in the search box</li>
-        <li>Select your address from the dropdown suggestions</li>
-        <li>View your personalized electric usage optimization report</li>
-        <li>Find the best times to use high-energy appliances</li>
-      </ul>
+      <div className="fw-bold mb-2">About PeakShift</div>
+      <div className="mb-3 small">
+        PeakShift helps you optimize your electricity usage by identifying the best times to run high-energy appliances. 
+        Get personalized insights based on your location's utility rates and demand patterns to reduce your energy costs.
+      </div>
+      
+      <div className="fw-bold mb-2">How to get started:</div>
+      <ol className="mb-2 ps-3 small">
+        <li className="mb-1">
+          <strong>Enter your complete address</strong> in the search box (include street, city, and state)
+        </li>
+        <li className="mb-1">
+          <strong>Select your address</strong> from the dropdown suggestions that appear
+        </li>
+        <li className="mb-1">
+          <strong>View your personalized report</strong> showing peak hours, rates, and optimization opportunities
+        </li>
+        <li className="mb-1">
+          <strong>Schedule high-energy activities</strong> during recommended off-peak times to save money
+        </li>
+      </ol>
     </>
   );
 

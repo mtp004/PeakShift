@@ -81,16 +81,33 @@ export function RateChart() {
   };
 
   const helpTooltip = (
-  <>
-    <div className="fw-bold mb-2">How to read your rate chart:</div>
-    <ul className="mb-2 ps-3">
-      <li>The bar chart shows your electric rates by hour for the selected month and day type.</li>
-      <li>Weekdays and weekends may have different schedules — use the toggle to switch.</li>
-      <li>Peak hours are highlighted on the right — try to avoid using high-energy appliances during these times.</li>
-      <li>You can bookmark your rate schedule using the "Bookmark" button for quick access later.</li>
-    </ul>
-  </>
-);
+    <>
+      <div className="fw-bold mb-2">Rate Charts</div>
+      <div className="mb-3 small">
+        This chart shows your hourly electricity rates throughout the day. Rates vary by time of day, 
+        day type (weekday/weekend), and season to reflect grid demand patterns and encourage off-peak usage.
+      </div>
+      
+      <div className="fw-bold mb-2">How to use this chart:</div>
+      <ol className="mb-2 ps-3 small">
+        <li className="mb-1">
+          <strong>Select your month</strong> - Choose the month you want to analyze (rates may vary seasonally)
+        </li>
+        <li className="mb-1">
+          <strong>Choose day type</strong> - Toggle between weekday and weekend schedules using the radio buttons
+        </li>
+        <li className="mb-1">
+          <strong>Review peak hours</strong> - Red-highlighted periods on the right show when rates are highest
+        </li>
+        <li className="mb-1">
+          <strong>Plan your usage</strong> - Run high-energy appliances during lower rate periods to save money
+        </li>
+        <li className="mb-1">
+          <strong>Bookmark for later</strong> - Save this rate schedule for quick future reference in My Data
+        </li>
+      </ol>
+    </>
+  );
 
   const backButton = (
     <button

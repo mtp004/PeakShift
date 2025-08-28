@@ -27,16 +27,30 @@ export function ReportsPage() {
   }, [decodedAddress]);
 
   const helpTooltip = (
-  <>
-    <div className="fw-bold mb-2">How to read your rate reports:</div>
-    <ul className="mb-2 ps-3">
-      <li>Each report shows a residential electric rate schedule for your address</li>
-      <li>Click "Select" on a report to view detailed usage charts and rate comparisons</li>
-      <li>If you are unsure which rate applies, you can upload your electric bill using the "Upload" button</li>
-      <li>Use the charts to identify high-cost periods and optimize your electricity usage</li>
-    </ul>
-  </>
-);
+    <>
+      <div className="fw-bold mb-2">About Rate Reports</div>
+      <div className="mb-3 small">
+        These reports show available residential electricity rate schedules from your local utility company. 
+        Each rate has different pricing structures, peak hours, and seasonal variations that affect your bill.
+      </div>
+      
+      <div className="fw-bold mb-2">How to use this page:</div>
+      <ol className="mb-2 ps-3 small">
+        <li className="mb-1">
+          <strong>Review available rates</strong> - Browse the rate schedules available for your address
+        </li>
+        <li className="mb-1">
+          <strong>Select a rate to explore</strong> - Click "Select" on any report to view detailed charts and analysis
+        </li>
+        <li className="mb-1">
+          <strong>Upload your bill (optional)</strong> - If unsure which rate applies to you, use the Upload button to identify your current rate
+        </li>
+        <li className="mb-1">
+          <strong>Analyze peak periods</strong> - Use the detailed charts to find the best times to run high-energy appliances
+        </li>
+      </ol>
+    </>
+  );
 
   return (
     <div className="card-body p-0 d-flex flex-column h-100 position-relative">

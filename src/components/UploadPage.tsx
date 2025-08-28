@@ -17,13 +17,29 @@ interface UploadPageProps {
 
 const helpTooltip = (
   <>
-    <div className="fw-bold mb-2">How to use PeakShift:</div>
-    <ul className="mb-2 ps-3">
-      <li>Click "Choose File" to select your electric bill (Accepted filetypes: .pdf, .jpeg, .png, .jpg, .gif, .bmp, .tif, .tiff)</li>
-      <li>If the file is larger than 1MB, it will automatically be compressed</li>
-      <li>Click the ✓ button to upload your bill</li>
-      <li>Wait for the upload to complete and view your utility rate name</li>
-    </ul>
+    <div className="mb-3">
+      Upload your electric bill to automatically identify your current utility rate schedule. 
+      This helps you find the exact rate plan you're on so you can get accurate optimization recommendations.
+    </div>
+    
+    <div className="fw-bold mb-2">How to upload your bill:</div>
+    <ol className="mb-2 ps-3 small">
+      <li className="mb-1">
+        <strong>Choose your file</strong> - Select your electric bill in PDF or image format (max 1MB)
+      </li>
+      <li className="mb-1">
+        <strong>Wait for processing</strong> - Large files will be automatically compressed to meet size requirements
+      </li>
+      <li className="mb-1">
+        <strong>Upload the file</strong> - Click the ✓ button to send your bill for analysis
+      </li>
+      <li className="mb-1">
+        <strong>View your rate name</strong> - Your utility rate schedule will be identified and displayed
+      </li>
+    </ol>
+    <div className="text-muted small">
+      <strong>Supported formats:</strong> PDF, JPEG, PNG, JPG, GIF, BMP, TIF, TIFF
+    </div>
   </>
 );
 
