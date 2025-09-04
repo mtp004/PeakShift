@@ -52,7 +52,7 @@ export const compressImage = async (file: File): Promise<File | null> => {
         console.warn('Failed to clean up after compression failure:', error);
       });
     }
-    // If loop completes without finding a suitable size
+    //If loop completes without finding a suitable size
     return null;
     
   } catch (error: any) {
@@ -63,7 +63,7 @@ export const compressImage = async (file: File): Promise<File | null> => {
 export const deleteResource = async (publicId: string): Promise<{ message: string; result: any }> => {
   try {
     const response = await fetch(
-      `https://us-central1-peakshift-react.cloudfunctions.net/deleteCloudinaryResource?publicId=${encodeURIComponent(publicId)}`,
+      `https://deletecloudinaryresource-s43aur27va-uc.a.run.app?publicId=${encodeURIComponent(publicId)}`,
       {
         method: 'DELETE',
         headers: {
