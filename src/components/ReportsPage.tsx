@@ -66,7 +66,7 @@ export function ReportsPage() {
           </button>
           <div className="d-flex align-items-center gap-1">
             <span className="text-muted">
-              Not sure which rate schedule you have? Try uploading your electric bill here →
+              Not sure which rate schedule? Try this →
             </span>
             <div className="dropdown position-relative">
               <button
