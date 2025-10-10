@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import debounce from 'lodash.debounce';
 import AddressInput from './AddressInput';
 import AddressCard from './AddressCard';
@@ -8,7 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import type { GeocodeResult } from '../APIs/GeocodeService';
 
 function SearchPage() {
-  const [address, setAddress] = useState('');
+  const location = useLocation();
+  const addressQuery = location.state?.addressQuery || '';
+
+  const [address, setAddress] = useState(addressQuery);
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,9 +38,11 @@ function SearchPage() {
     }
   }, [address]);
 
-  function onSelectAddress(address: string) {
-    const encodedAddress = encodeURIComponent(address);
-    navigate(`/search/report?address=${encodedAddress}`);
+  function onSelectAddress(addr: string) {
+    const encodedAddress = encodeURIComponent(addr);
+    navigate(`/search/report?address=${encodedAddress}`, { 
+    state: { addressQuery: address } 
+  });
   }
 
   const helpTooltip = (

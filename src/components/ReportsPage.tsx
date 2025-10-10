@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import UploadPage from './UploadPage';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -10,6 +10,8 @@ import { ReportCard } from './ReportCard';
 
 export function ReportsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const addressQuery = location.state?.addressQuery || '';
 
   const [params] = useSearchParams();
   const address = params.get('address');
@@ -59,7 +61,13 @@ export function ReportsPage() {
           <button
             type="button"
             className="btn btn-outline-secondary btn-sm fw-semibold"
-            onClick={() => window.history.back()}
+            onClick={() => {
+              if (addressQuery) {
+                navigate('/', { state: { addressQuery } });
+              } else {
+                window.history.back();
+              }
+            }}
             aria-label="Navigate back to address search page"
           >
             Back
