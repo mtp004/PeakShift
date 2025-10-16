@@ -1,25 +1,33 @@
-// components/AddressInput.tsx
+import { useEffect, useRef } from 'react';
+
 interface AddressInputProps {
   address: string;
   setAddress: (address: string) => void;
 }
 
 function AddressInput({ address, setAddress }: AddressInputProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleClear = () => setAddress('');
-  
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="card p-4 shadow-sm">
       <h2 className="h4 mb-3">Enter Your Address</h2>
       <p className="text-muted mb-4">
         Enter your address to get location-specific electricity rate information
       </p>
-      
+
       <div className="mb-3">
         <label htmlFor="address" className="form-label">
           Street Address
         </label>
         <div className="position-relative">
           <input
+            ref={inputRef} // 👈 attach the ref
             type="text"
             className="form-control"
             id="address"

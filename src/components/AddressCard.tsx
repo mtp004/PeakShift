@@ -1,5 +1,7 @@
 import React from 'react';
 
+type SearchMode = 'electric' | 'solar';
+
 type GeocodeProps = {
   geocodeResult: {
     place_id: number;
@@ -26,15 +28,16 @@ type GeocodeProps = {
     };
     boundingbox: [string, string, string, string];
   };
-  onSelect: () => void; // Callback for report selection
+  onSelect: () => void;
+  searchMode: SearchMode; // Add this prop
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect }) => {
+const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect, searchMode }) => {
   return (
-    <div className="card shadow-sm" >
-      <div className="card-body p-2 d-flex justify-content-between align-items-center" style={{ height: '90px' }}>        
+    <div className="card shadow-sm">
+      <div className="card-body p-2 d-flex justify-content-between align-items-center" style={{ height: '90px' }}>
         <div className="align-self-start">
           <h5 className="card-title mb-0 p-1 start-0 top-0">{capitalize(geocodeResult.addresstype)}</h5>
           <h6 className="card-subtitle text-muted" style={{
@@ -42,11 +45,13 @@ const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect }) => {
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden'
-            }}>{geocodeResult.display_name}
+          }}>{geocodeResult.display_name}
           </h6>
         </div>
         <button
-          className="btn btn-outline-primary btn-sm fw-semibold flex-shrink-0"
+          className={`btn btn-sm fw-semibold flex-shrink-0 ${
+            searchMode === 'solar' ? 'btn-outline-warning' : 'btn-outline-primary'
+          }`}
           style={{height: '60px', width: '100px'}}
           onClick={() => onSelect()}
           aria-label={`View reports for ${geocodeResult.display_name}`}

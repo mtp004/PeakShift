@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import UploadPage from './UploadPage';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { Tooltip } from './Tooltip';
 
 import {processRatesResults, type RateItem, type RatesAPIResponse } from '../APIs/OpenEIServices';
@@ -12,6 +11,7 @@ export function ReportsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const addressQuery = location.state?.addressQuery || '';
+  const searchMode = location.state?.searchMode || 'solar';
 
   const [params] = useSearchParams();
   const address = params.get('address');
@@ -63,7 +63,7 @@ export function ReportsPage() {
             className="btn btn-outline-secondary btn-sm fw-semibold"
             onClick={() => {
               if (addressQuery) {
-                navigate('/', { state: { addressQuery } });
+                navigate('/', { state: { addressQuery, searchMode } });
               } else {
                 window.history.back();
               }

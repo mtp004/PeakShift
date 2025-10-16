@@ -6,6 +6,7 @@ import ReportsPage from './components/ReportsPage';
 import RateChart from './components/RateChart';
 import UploadPage from './components/UploadPage';
 import { DataPage } from './components/DataPage';
+import { SolarQuestionPage } from './components/SolarQuestionPage';
 
 export function App() {
   return (
@@ -17,6 +18,7 @@ export function App() {
           <Route index element={<SearchPage />} />
           <Route path="search/report" element={<ReportsPage />} />
           <Route path="search/ratechart" element={<RateChart />} />
+          <Route path="search/questionaire" element={<SolarQuestionPage />} />
           
           {/* My Data flow routes */}
           <Route path="data" element={<DataPage />} />

@@ -8,13 +8,15 @@ import { fetchGeocode } from '../APIs/GeocodeService';
 import { useNavigate } from 'react-router-dom';
 import type { GeocodeResult } from '../APIs/GeocodeService';
 
+type SearchMode = 'electric' | 'solar';
+
 function SearchPage() {
   const location = useLocation();
-  const addressQuery = location.state?.addressQuery || '';
 
-  const [address, setAddress] = useState(addressQuery);
+  const [address, setAddress] = useState(location.state?.addressQuery || '');
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState<SearchMode>(location.state?.searchMode || 'electric');
   const navigate = useNavigate();
   
   const debouncedQuery = useRef(
@@ -40,9 +42,15 @@ function SearchPage() {
 
   function onSelectAddress(addr: string) {
     const encodedAddress = encodeURIComponent(addr);
-    navigate(`/search/report?address=${encodedAddress}`, { 
-    state: { addressQuery: address } 
-  });
+    if (searchMode === 'electric') {
+      navigate(`/search/report?address=${encodedAddress}`, { 
+        state: { addressQuery: address, searchMode: searchMode } 
+      });
+    } else {
+      navigate(`/search/questionaire?address=${encodedAddress}`, { 
+        state: { addressQuery: address, searchMode: searchMode } 
+      });
+    }
   }
 
   const helpTooltip = (
@@ -56,16 +64,16 @@ function SearchPage() {
       <div className="fw-bold mb-2">How to get started:</div>
       <ol className="mb-2 ps-3 small">
         <li className="mb-1">
+          <strong>Choose your search mode</strong> - Electric rates or Solar potential
+        </li>
+        <li className="mb-1">
           <strong>Enter your complete address</strong> in the search box (include street, city, and state)
         </li>
         <li className="mb-1">
           <strong>Select your address</strong> from the dropdown suggestions that appear
         </li>
         <li className="mb-1">
-          <strong>View your personalized report</strong> showing peak hours, rates, and optimization opportunities
-        </li>
-        <li className="mb-1">
-          <strong>Schedule high-energy activities</strong> during recommended off-peak times to save money
+          <strong>View your personalized report</strong> showing insights and optimization opportunities
         </li>
       </ol>
     </>
@@ -73,6 +81,26 @@ function SearchPage() {
 
   return (
     <div className="h-100 d-flex justify-content-center align-items-center bg-light position-relative">
+      {/* Toggle Switch - Top Left */}
+      <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
+        <div className="btn-group" role="group" aria-label="Search mode toggle">
+          <button
+            type="button"
+            className={`btn ${searchMode === 'electric' ? 'btn-primary' : 'btn-outline-primary'}`}
+            onClick={() => setSearchMode('electric')}
+          >
+            ⚡ Electric Rates
+          </button>
+          <button
+            type="button"
+            className={`btn ${searchMode === 'solar' ? 'btn-warning' : 'btn-outline-warning'}`}
+            onClick={() => setSearchMode('solar')}
+          >
+            ☀️ Solar Potential
+          </button>
+        </div>
+      </div>
+
       {/* Tooltip Component */}
       <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
         <Tooltip tooltip={helpTooltip} />
@@ -80,7 +108,12 @@ function SearchPage() {
       
       {/* Main content */}
       <div className="container" style={{ maxWidth: '600px'}}>
-        <h1 className="text-center mb-4">PeakShift - Electric Usage Optimizer</h1>
+        <h1 className="text-center mb-4">
+          {searchMode === 'electric' 
+          ? 'PeakShift - Electric Usage Optimizer' 
+          : 'PeakShift - Solar Potential Optimizer'}
+        </h1>
+
         <div className="position-relative">
           <AddressInput address={address} setAddress={setAddress} />
           {(geocodeResult !== null || isLoading) && address.trim() !== '' && (
@@ -108,6 +141,7 @@ function SearchPage() {
                     key={result.place_id}
                     geocodeResult={result}
                     onSelect={() => onSelectAddress(result.display_name)}
+                    searchMode={searchMode}  // Pass searchMode here
                   />
                 ))
               ) : null}
