@@ -49,9 +49,21 @@ export function SolarInfoPage() {
 
     try {
       const data = await fetchPvWatts(parseFloat(lat), parseFloat(lon), purposeOption);
-      setPvResult(data);
+      console.log("PVWatts response:", data);
+      // check for errors array
+      if (!data.outputs) {
+        const msg =
+          data.error?.message ||
+          (Array.isArray(data.errors) ? data.errors.join(", ") : "An unexpected error occurred.");
+
+        setError(msg);
+        setPvResult(null);
+      } else {
+        setPvResult(data);
+      }
     } catch (err: any) {
       setError(err.message);
+      setPvResult(null);
     } finally {
       setLoading(false);
     }
@@ -59,7 +71,7 @@ export function SolarInfoPage() {
 
   useEffect(() => {
     loadData();
-  }, [lat, lon, purposeOption]);
+  }, []);
 
   // --- Subcomponent for visualization ---
   const SolarChart = ({ result }: { result: any }) => {

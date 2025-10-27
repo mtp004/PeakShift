@@ -2,7 +2,7 @@ import asyncio
 import aiohttp
 from flask import jsonify, make_response, request
 from scipy.interpolate import Rbf
-from scipy.optimize import minimize
+from scipy.optimize import differential_evolution 
 import numpy as np
 import os 
 
@@ -18,8 +18,8 @@ PVWATTS_ESTIMATED_DOLLAR_PER_WATT_MATRIX_5X3_LIST = [
     [2.70, 2.80, 2.60],  # 4: 2-Axis
 ]
 
-AZIMUTHS = [0, 90, 180, 270]
-TILTS = [0, 15, 30]
+AZIMUTHS = [0, 60, 120, 180, 240, 300]
+TILTS = [0, 10, 20, 30, 40]
 MODULE_TYPES_TO_TEST = [0, 1, 2] 
 # --- END CONSTANTS ---
 
@@ -54,21 +54,24 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
     # 2. Define the objective function (minimize the negative score)
     def negative_score(params):
         tilt, azimuth = params
-        tilt = np.clip(tilt, 0, 90)
+        tilt = np.clip(tilt, 0, 60)
         azimuth = np.clip(azimuth, 0, 360)
         ac_annual = interpolator(tilt, azimuth) 
         score = calculate_score(array_type, module_type, ac_annual, spending)
         return -score
 
     # 3. Perform optimization
-    bounds = [(0, 90), (0, 360)]
-    initial_guess = [15, 180] 
+    bounds = [(0, 40), (0, 359)]
 
-    result = minimize(
-        negative_score, 
-        initial_guess, 
-        method='L-BFGS-B', 
-        bounds=bounds
+    result = differential_evolution(
+        negative_score,
+        bounds=bounds,
+        strategy='best1bin',
+        maxiter=100,        
+        popsize=15,         # controls number of candidate points per iteration
+        tol=1e-6,
+        polish=True,        
+        updating='deferred',
     )
 
     if result.success:
