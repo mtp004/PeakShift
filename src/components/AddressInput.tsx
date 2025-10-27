@@ -27,7 +27,7 @@ function AddressInput({ address, setAddress }: AddressInputProps) {
         </label>
         <div className="position-relative">
           <input
-            ref={inputRef} // 👈 attach the ref
+            ref={inputRef} 
             type="text"
             className="form-control"
             id="address"

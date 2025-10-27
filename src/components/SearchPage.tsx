@@ -40,14 +40,14 @@ function SearchPage() {
     }
   }, [address]);
 
-  function onSelectAddress(addr: string) {
-    const encodedAddress = encodeURIComponent(addr);
+  function onSelectAddress(geocodeResult: GeocodeResult) {
+    const encodedAddress = encodeURIComponent(geocodeResult.display_name);
     if (searchMode === 'electric') {
       navigate(`/search/report?address=${encodedAddress}`, { 
         state: { addressQuery: address, searchMode: searchMode } 
       });
     } else {
-      navigate(`/search/questionaire?address=${encodedAddress}`, { 
+      navigate(`/search/questionaire?lat=${geocodeResult.lat}&lon=${geocodeResult.lon}`, { 
         state: { addressQuery: address, searchMode: searchMode } 
       });
     }
@@ -81,24 +81,15 @@ function SearchPage() {
 
   return (
     <div className="h-100 d-flex justify-content-center align-items-center bg-light position-relative">
-      {/* Toggle Switch - Top Left */}
+      {/* Single Toggle Button - Top Left */}
       <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-        <div className="btn-group" role="group" aria-label="Search mode toggle">
-          <button
-            type="button"
-            className={`btn ${searchMode === 'electric' ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => setSearchMode('electric')}
-          >
-            ⚡ Electric Rates
-          </button>
-          <button
-            type="button"
-            className={`btn ${searchMode === 'solar' ? 'btn-warning' : 'btn-outline-warning'}`}
-            onClick={() => setSearchMode('solar')}
-          >
-            ☀️ Solar Potential
-          </button>
-        </div>
+        <button
+          type="button"
+          className={`btn ${searchMode === 'electric' ? 'btn-primary' : 'btn-warning'}`}
+          onClick={() => setSearchMode(prev => (prev === 'electric' ? 'solar' : 'electric'))}
+        >
+          {searchMode === 'electric' ? '⚡ Electric Rates' : '☀️ Solar Potential'}
+        </button>
       </div>
 
       {/* Tooltip Component */}
@@ -140,7 +131,7 @@ function SearchPage() {
                   <AddressCard
                     key={result.place_id}
                     geocodeResult={result}
-                    onSelect={() => onSelectAddress(result.display_name)}
+                    onSelect={() => onSelectAddress(result)}
                     searchMode={searchMode}  // Pass searchMode here
                   />
                 ))

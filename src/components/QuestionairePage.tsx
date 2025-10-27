@@ -23,8 +23,8 @@ export function QuestionairePage() {
   const searchMode = state?.searchMode || 'solar';
 
   const [params] = useSearchParams();
-  const encodedAddress = params.get('address');
-  const decodedAddress = decodeURIComponent(encodedAddress || '');
+  const lat = params.get('lat');
+  const lon = params.get('lon');
 
   const [purpose, setPurpose] = useState<PurposeOption>(state?.purpose || '');
 
@@ -39,7 +39,7 @@ export function QuestionairePage() {
     }
 
     const encodedPurpose = encodeURIComponent(purpose);
-    navigate(`/search/solarinfo?address=${encodedAddress}&purpose=${encodedPurpose}`, {
+    navigate(`/search/solarinfo?lat=${lat}&lon=${lon}&purpose=${encodedPurpose}`, {
       state: {
         addressQuery,
         searchMode,
