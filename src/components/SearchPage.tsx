@@ -47,7 +47,7 @@ function SearchPage() {
         state: { addressQuery: address, searchMode: searchMode } 
       });
     } else {
-      navigate(`/search/questionaire?lat=${geocodeResult.lat}&lon=${geocodeResult.lon}`, { 
+      navigate(`/search/questionaire?address=${encodedAddress}&lat=${geocodeResult.lat}&lon=${geocodeResult.lon}`, { 
         state: { addressQuery: address, searchMode: searchMode } 
       });
     }

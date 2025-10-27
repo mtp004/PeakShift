@@ -1,11 +1,15 @@
 import asyncio
 import aiohttp
 from flask import jsonify, make_response, request
+from scipy.interpolate import Rbf
+from scipy.optimize import minimize
+import numpy as np
+import os 
 
-PVWATTS_KEY = "xImLi895vhAer05uGQXXoLZK2Tw8gCCdIJX41YFp"
+# --- CONSTANTS ---
+PVWATTS_KEY = os.environ.get("PVWATTS_KEY")
 PVWATTS_URL = "https://developer.nrel.gov/api/pvwatts/v8.json"
 
-# [array_type][module_type]
 PVWATTS_ESTIMATED_DOLLAR_PER_WATT_MATRIX_5X3_LIST = [
     [2.80, 2.90, 2.70],  # 0: Fixed - Open Rack
     [3.20, 3.30, 3.10],  # 1: Fixed - Roof Mounted
@@ -14,112 +18,167 @@ PVWATTS_ESTIMATED_DOLLAR_PER_WATT_MATRIX_5X3_LIST = [
     [2.70, 2.80, 2.60],  # 4: 2-Axis
 ]
 
+AZIMUTHS = [0, 90, 180, 270]
+TILTS = [0, 15, 30]
+MODULE_TYPES_TO_TEST = [0, 1, 2] 
+# --- END CONSTANTS ---
+
 
 async def fetch_pvwatts(session, params):
     """Fetch PVWatts data and return (json, ac_annual)."""
     async with session.get(PVWATTS_URL, params=params) as resp:
         data = await resp.json()
-        ac_annual = data.get("outputs", {}).get("ac_annual", 0)
-        return data, ac_annual
+        return data
 
-# Helper function to calculate the score
 def calculate_score(array_type, module_type, ac_annual, spending):
     """Calculate the score based on annual energy and price per watt."""
-    # Note: array_type must be int, module_type must be int
     array_type = int(array_type)
     module_type = int(module_type)
     
     price_per_watt = PVWATTS_ESTIMATED_DOLLAR_PER_WATT_MATRIX_5X3_LIST[array_type][module_type]
-    # (spending / (price_per_watt * 1000 W/kW)) * ac_annual (kWh/kW/yr)
     score = (spending / (price_per_watt * 1000)) * ac_annual
     return score
 
+def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
+    """Interpolates AC annual data using RBF and optimizes to find max score."""
+    if not ac_annual_data:
+        return None, None, float("-inf"), 0
+
+    # 1. Prepare data for RBF interpolation
+    tilts = np.array([d[0] for d in ac_annual_data])
+    azimuths = np.array([d[1] for d in ac_annual_data])
+    values = np.array([d[2] for d in ac_annual_data])
+
+    interpolator = Rbf(tilts, azimuths, values, function='multiquadric')
+
+    # 2. Define the objective function (minimize the negative score)
+    def negative_score(params):
+        tilt, azimuth = params
+        tilt = np.clip(tilt, 0, 90)
+        azimuth = np.clip(azimuth, 0, 360)
+        ac_annual = interpolator(tilt, azimuth) 
+        score = calculate_score(array_type, module_type, ac_annual, spending)
+        return -score
+
+    # 3. Perform optimization
+    bounds = [(0, 90), (0, 360)]
+    initial_guess = [15, 180] 
+
+    result = minimize(
+        negative_score, 
+        initial_guess, 
+        method='L-BFGS-B', 
+        bounds=bounds
+    )
+
+    if result.success:
+        best_tilt = np.round(result.x[0], 2)
+        best_azimuth = np.round(result.x[1], 2)
+        max_score = -result.fun
+        best_ac_annual = interpolator(best_tilt, best_azimuth)
+        return best_tilt, best_azimuth, max_score, best_ac_annual
+    else:
+        # Fall back to the best point in the initial grid if optimization fails
+        best_index = np.argmax(values)
+        best_tilt, best_azimuth = tilts[best_index], azimuths[best_index]
+        max_score = calculate_score(array_type, module_type, values[best_index], spending)
+        return best_tilt, best_azimuth, max_score, values[best_index]
+
+
 async def get_best_item(lat, lon, purpose, spending=1000):
-    # Select array types based on purpose
     if purpose == "A":
         array_types = [0, 1, 3]
     else:
         array_types = [2, 3, 4]
 
-    # Initialize variables for the initial search (using module_type = 0)
-    module_type_0 = 0 
-    tilt_angles = [-30, -15, 0, 15, 30]
     highestScore = float("-inf")
     bestItem = None
+    
+    final_best_array_type = None
+    final_best_tilt = None
+    final_best_azimuth = None
 
     async with aiohttp.ClientSession() as session:
-        # --- Step 1: Find best array_type and tilt_angle using module_type = 0 ---
+        # --- Stage 1: Grid Search, Interpolation, and Optimization (for module_type 0) ---
         for array_type in array_types:
-            # Launch all 5 tilt angle requests concurrently
-            tasks = []
-            for tilt_angle in tilt_angles:
-                azimuth = 180 if tilt_angle < 0 else 0
-                tilt = abs(tilt_angle)
+            
+            # 1. Create all API parameters for the 3x4 grid
+            params_list = []
+            for tilt in TILTS:
+                for azimuth in AZIMUTHS:
+                    params = {
+                        "api_key": PVWATTS_KEY,
+                        "lat": lat,
+                        "lon": lon,
+                        "system_capacity": 1,
+                        "module_type": 0,
+                        "array_type": array_type,
+                        "losses": 10,
+                        "tilt": tilt,
+                        "azimuth": azimuth,
+                    }
+                    params_list.append(params)
 
-                params = {
-                    "api_key": PVWATTS_KEY,
-                    "lat": lat,
-                    "lon": lon,
-                    "system_capacity": 1,
-                    "module_type": module_type_0,
-                    "array_type": array_type,
-                    "losses": 10,
-                    "tilt": tilt,
-                    "azimuth": azimuth,
-                }
-                tasks.append(fetch_pvwatts(session, params))
-
+            # 2. Launch all 12 requests concurrently
+            tasks = [fetch_pvwatts(session, params) for params in params_list]
             results = await asyncio.gather(*tasks)
 
-            # Pick best tilt angle for this array_type
-            for (data, ac_annual), _ in zip(results, tilt_angles):
-                # We use module_type_0 here
-                score = calculate_score(array_type, module_type_0, ac_annual, spending)
+            # 3. Consolidate results for optimization
+            ac_annual_data = [] 
+            grid_points = [(tilt, azimuth) for tilt in TILTS for azimuth in AZIMUTHS]
 
-                if score > highestScore:
-                    highestScore = score
-                    bestItem = data
-        
-        # --- Step 2: Compare module types 1 and 2 using the best configuration found ---
-        if bestItem is not None:
+            for data, (tilt, azimuth) in zip(results, grid_points):
+                 ac_annual = data.get("outputs", {}).get("ac_annual", 0) 
+                 ac_annual_data.append((tilt, azimuth, ac_annual))
+
+            # 4. Interpolate and Optimize
+            best_tilt, best_azimuth, max_score, _ = optimize_tilt_azimuth(
+                ac_annual_data, array_type, 0, spending
+            )
             
-            # Extract the best configuration parameters from the winning item's 'inputs'
-            best_inputs = bestItem.get('inputs', {})
+            # 5. Compare with the overall best found so far
+            if max_score > highestScore:
+                highestScore = max_score
+                final_best_array_type = array_type
+                final_best_tilt = best_tilt
+                final_best_azimuth = best_azimuth
+
+        # --- Stage 2: Compare All Module Types at the Final Optimal Geometry ---
+        if final_best_array_type is not None:
             
-            # Note: PVWatts JSON returns these as strings, so we ensure they are integers for list indexing
-            best_array_type = int(best_inputs.get('array_type', 0)) 
-            best_tilt = best_inputs.get('tilt')
-            best_azimuth = best_inputs.get('azimuth')
-            
-            # Module types to test
-            other_module_types = [1, 2]
-            
-            # Prepare and launch requests for module types 1 and 2 concurrently
+            # Prepare and launch requests for all 3 module types concurrently
             test_tasks = []
-            for new_module_type in other_module_types:
+            for module_type in MODULE_TYPES_TO_TEST:
                 params = {
                     "api_key": PVWATTS_KEY,
                     "lat": lat,
                     "lon": lon,
                     "system_capacity": 1,
-                    "module_type": new_module_type, # <--- Testing new module type
-                    "array_type": best_array_type, # Fixed to best array type
+                    "module_type": module_type,
+                    "array_type": final_best_array_type,
                     "losses": 10,
-                    "tilt": best_tilt, # Fixed to best tilt
-                    "azimuth": best_azimuth, # Fixed to best azimuth
+                    "tilt": final_best_tilt,
+                    "azimuth": final_best_azimuth,
                 }
                 test_tasks.append(fetch_pvwatts(session, params))
 
-            test_results = await asyncio.gather(*test_tasks)
+            final_results = await asyncio.gather(*test_tasks)
 
-            # Compare scores and update bestItem if necessary
-            for (data, ac_annual), new_module_type in zip(test_results, other_module_types):
-                # Calculate the score using the new module type's price
-                score = calculate_score(best_array_type, new_module_type, ac_annual, spending)
-                
-                if score > highestScore:
-                    highestScore = score
-                    bestItem = data # Update to the new best item
+            if final_results:
+                all_scores = [
+                    calculate_score(
+                        final_best_array_type,
+                        int(data.get("inputs", {}).get("module_type", 0)),
+                        data.get("outputs", {}).get("ac_annual", 0),
+                        spending
+                    )
+                    for data in final_results
+                ]
+
+                best_score_index = np.argmax(all_scores)
+                bestItem = final_results[best_score_index]
+            else:
+                bestItem = None
 
     return bestItem
 
