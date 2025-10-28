@@ -54,14 +54,14 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
     # 2. Define the objective function (minimize the negative score)
     def negative_score(params):
         tilt, azimuth = params
-        tilt = np.clip(tilt, 0, 60)
-        azimuth = np.clip(azimuth, 0, 360)
+        tilt = np.clip(tilt, 0, 50)
+        azimuth = np.clip(azimuth, 0, 359)
         ac_annual = interpolator(tilt, azimuth) 
         score = calculate_score(array_type, module_type, ac_annual, spending)
         return -score
 
     # 3. Perform optimization
-    bounds = [(0, 40), (0, 359)]
+    bounds = [(0, 50), (0, 359)]
 
     result = differential_evolution(
         negative_score,
@@ -88,11 +88,17 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
         return best_tilt, best_azimuth, max_score, values[best_index]
 
 
-async def get_best_item(lat, lon, purpose, spending=1000):
-    if purpose == "A":
-        array_types = [0, 1, 3]
+async def get_best_item(lat, lon, answers, spending=1000):
+    if answers[0] == "A":
+        if answers[1] == "A":
+            array_types = [1]
+        else:
+            array_types = [0]
     else:
-        array_types = [2, 3, 4]
+        if answers[1] == "A":
+            array_types = [2, 3, 4]
+        else:
+            array_types = [0]
 
     highestScore = float("-inf")
     bestItem = None
@@ -104,7 +110,31 @@ async def get_best_item(lat, lon, purpose, spending=1000):
     async with aiohttp.ClientSession() as session:
         # --- Stage 1: Grid Search, Interpolation, and Optimization (for module_type 0) ---
         for array_type in array_types:
-            
+            # if type 4 , request only once
+            if array_type == 4:
+                params = {
+                    "api_key": PVWATTS_KEY,
+                    "lat": lat,
+                    "lon": lon,
+                    "system_capacity": 1,
+                    "module_type": 0,
+                    "array_type": 4,
+                    "losses": 10,
+                    "tilt": 0,     
+                    "azimuth": 0,  
+                }
+                data = await fetch_pvwatts(session, params)
+
+                ac_annual = data.get("outputs", {}).get("ac_annual", 0)
+                score = calculate_score(4, 0, ac_annual, spending)
+
+                if score > highestScore:
+                    highestScore = score
+                    final_best_array_type = array_type
+                    final_best_tilt = 0
+                    final_best_azimuth = 0
+                continue  
+
             # 1. Create all API parameters for the 3x4 grid
             params_list = []
             for tilt in TILTS:
@@ -122,7 +152,7 @@ async def get_best_item(lat, lon, purpose, spending=1000):
                     }
                     params_list.append(params)
 
-            # 2. Launch all 12 requests concurrently
+            # 2. Launch all requests concurrently
             tasks = [fetch_pvwatts(session, params) for params in params_list]
             results = await asyncio.gather(*tasks)
 
@@ -201,15 +231,15 @@ def get_pvwatts(request):
 
     lat = request_json.get("lat")
     lon = request_json.get("lon")
-    purpose = request_json.get("purpose")
+    answers = request_json.get("answers")
     spending = request_json.get("spending", 1000)
 
     if lat is None or lon is None:
         return jsonify({"error": "Latitude and longitude are required"}), 400
-    if purpose not in ["A", "B"]:
-        return jsonify({"error": "Purpose must be 'A' or 'B'"}), 400
+    if not answers:
+        return jsonify({"error": "Answer choices must be 'AB', etc"}), 400
 
-    best_item = asyncio.run(get_best_item(lat, lon, purpose, spending))
+    best_item = asyncio.run(get_best_item(lat, lon, answers, spending))
 
     response = jsonify(best_item)
     response.headers["Access-Control-Allow-Origin"] = "*"

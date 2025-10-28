@@ -25,21 +25,21 @@ export const MODULE_TYPES: Record<string, string> = {
  * 
  * @param lat - Latitude of the location
  * @param lon - Longitude of the location
- * @param purpose - Purpose parameter for backend optimization
+ * @param answers - Purpose parameter for backend optimization
  * @returns Parsed PVWatts result
  * @throws Error if network or API returns failure
  */
 export async function fetchPvWatts(
   lat: number,
   lon: number,
-  purpose: string
+  answers: string
 ): Promise<PvWattsResult> {
   const res = await fetch(
     "https://us-central1-peakshift-react.cloudfunctions.net/get_pvwatts",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lat, lon, purpose }),
+      body: JSON.stringify({ lat, lon, answers: answers }),
     }
   );
 

@@ -22,7 +22,7 @@ export function SolarInfoPage() {
   const decodedAddress = decodeURIComponent(encodedAddress || '');
   const lat = params.get('lat');
   const lon = params.get('lon');
-  const purposeOption = params.get('purpose');
+  const answers = params.get('answers');
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,23 +32,22 @@ export function SolarInfoPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleBack = () => {
-    const purpose = location.state?.purpose;
     const addressQuery = location.state?.addressQuery;
-    if (purpose) {
-      navigate(`/search/questionaire?address=${encodedAddress}&lat=${lat}&lon=${lon}`, { state: { addressQuery, purpose } });
+    if (answers) {
+      navigate(`/search/questionaire?address=${encodedAddress}&lat=${lat}&lon=${lon}`, { state: { addressQuery, answers } });
     } else {
       window.history.back();
     }
   };
 
   const loadData = async () => {
-    if (!lat || !lon || !purposeOption) return;
+    if (!lat || !lon || !answers) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const data = await fetchPvWatts(parseFloat(lat), parseFloat(lon), purposeOption);
+      const data = await fetchPvWatts(parseFloat(lat), parseFloat(lon), answers);
       console.log("PVWatts response:", data);
       // check for errors array
       if (!data.outputs) {
