@@ -1,8 +1,8 @@
 import asyncio
 import aiohttp
 from flask import jsonify, make_response, request
-from scipy.interpolate import Rbf
 from scipy.optimize import differential_evolution 
+from scipy.interpolate import RectBivariateSpline
 import numpy as np
 import os 
 
@@ -40,37 +40,43 @@ def calculate_score(array_type, module_type, ac_annual, spending):
     return score
 
 def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
-    """Interpolates AC annual data using RBF and optimizes to find max score."""
     if not ac_annual_data:
         return None, None, float("-inf"), 0
 
-    # 1. Prepare data for RBF interpolation
-    tilts = np.array([d[0] for d in ac_annual_data])
-    azimuths = np.array([d[1] for d in ac_annual_data])
-    values = np.array([d[2] for d in ac_annual_data])
+    # 1. Prepare data for spline interpolation
+    tilts = np.unique([d[0] for d in ac_annual_data])
+    azimuths = np.unique([d[1] for d in ac_annual_data])
 
-    interpolator = Rbf(tilts, azimuths, values, function='multiquadric')
+    # Reshape AC annual values into a grid (tilts x azimuths)
+    values = np.zeros((len(tilts), len(azimuths)))
+    for t, a, v in ac_annual_data:
+        i = np.where(tilts == t)[0][0]
+        j = np.where(azimuths == a)[0][0]
+        values[i, j] = v
 
-    # 2. Define the objective function (minimize the negative score)
+    # 2. Create a smooth bivariate spline interpolator
+    interpolator = RectBivariateSpline(tilts, azimuths, values, kx=3, ky=3, s=0)
+
+    # 3. Define the objective function (minimize the negative score)
     def negative_score(params):
         tilt, azimuth = params
         tilt = np.clip(tilt, 0, 50)
         azimuth = np.clip(azimuth, 0, 359)
-        ac_annual = interpolator(tilt, azimuth) 
+        ac_annual = float(interpolator(tilt, azimuth))
         score = calculate_score(array_type, module_type, ac_annual, spending)
         return -score
 
-    # 3. Perform optimization
+    # 4. Perform optimization
     bounds = [(0, 50), (0, 359)]
 
     result = differential_evolution(
         negative_score,
         bounds=bounds,
         strategy='best1bin',
-        maxiter=100,        
-        popsize=15,         # controls number of candidate points per iteration
+        maxiter=100,
+        popsize=15,
         tol=1e-6,
-        polish=True,        
+        polish=True,
         updating='deferred',
     )
 
@@ -78,14 +84,14 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
         best_tilt = np.round(result.x[0], 2)
         best_azimuth = np.round(result.x[1], 2)
         max_score = -result.fun
-        best_ac_annual = interpolator(best_tilt, best_azimuth)
-        return best_tilt, best_azimuth, max_score, best_ac_annual
+        best_ac_annual = float(interpolator(best_tilt, best_azimuth))
+        return best_tilt, best_azimuth, max_score
     else:
         # Fall back to the best point in the initial grid if optimization fails
         best_index = np.argmax(values)
         best_tilt, best_azimuth = tilts[best_index], azimuths[best_index]
         max_score = calculate_score(array_type, module_type, values[best_index], spending)
-        return best_tilt, best_azimuth, max_score, values[best_index]
+        return best_tilt, best_azimuth, max_score
 
 
 async def get_best_item(lat, lon, answers, spending=1000):
@@ -165,7 +171,7 @@ async def get_best_item(lat, lon, answers, spending=1000):
                  ac_annual_data.append((tilt, azimuth, ac_annual))
 
             # 4. Interpolate and Optimize
-            best_tilt, best_azimuth, max_score, _ = optimize_tilt_azimuth(
+            best_tilt, best_azimuth, max_score = optimize_tilt_azimuth(
                 ac_annual_data, array_type, 0, spending
             )
             
