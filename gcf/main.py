@@ -55,19 +55,21 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
         values[i, j] = v
 
     # 2. Create a smooth bivariate spline interpolator
-    interpolator = RectBivariateSpline(tilts, azimuths, values, kx=3, ky=3, s=0)
+    azimuths_extended = np.append(azimuths, 359.99)
+    values_extended = np.hstack([values, values[:, 0:1]])  # Reuse 0° column
+    interpolator = RectBivariateSpline(tilts, azimuths_extended, values_extended, kx=3, ky=3, s=0)
 
     # 3. Define the objective function (minimize the negative score)
     def negative_score(params):
         tilt, azimuth = params
         tilt = np.clip(tilt, 0, 50)
-        azimuth = np.clip(azimuth, 0, 359)
-        ac_annual = float(interpolator(tilt, azimuth))
+        azimuth = np.clip(azimuth, 0, 359.99)
+        ac_annual = interpolator(tilt, azimuth)[0, 0]
         score = calculate_score(array_type, module_type, ac_annual, spending)
         return -score
 
     # 4. Perform optimization
-    bounds = [(0, 50), (0, 359)]
+    bounds = [(0, 50), (0, 359.99)]
 
     result = differential_evolution(
         negative_score,
@@ -84,7 +86,7 @@ def optimize_tilt_azimuth(ac_annual_data, array_type, module_type, spending):
         best_tilt = np.round(result.x[0], 2)
         best_azimuth = np.round(result.x[1], 2)
         max_score = -result.fun
-        best_ac_annual = float(interpolator(best_tilt, best_azimuth))
+        best_ac_annual = interpolator(best_tilt, best_azimuth)[0, 0]
         return best_tilt, best_azimuth, max_score
     else:
         # Fall back to the best point in the initial grid if optimization fails
