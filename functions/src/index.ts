@@ -3,6 +3,8 @@ import { initializeApp } from 'firebase-admin/app';
 import Busboy from 'busboy';
 import { processImageWithOcr, OcrSpaceResponse } from './OCR-helper';
 import { v2 as cloudinary } from 'cloudinary';
+export { utilityRates } from './utilityRates';
+export { geocode } from './geocode';
 
 initializeApp();
 
@@ -221,3 +223,5 @@ export const deleteCloudinaryResource = onRequest(async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
+//------------- CLOUDINARY API ENDS HERE -----------//

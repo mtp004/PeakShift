@@ -1,51 +1,47 @@
 import React from 'react';
+import type { GeocodeResult } from '../APIs/GeocodeService';
 
 type SearchMode = 'electric' | 'solar';
 
 type GeocodeProps = {
-  geocodeResult: {
-    place_id: number;
-    licence: string;
-    osm_type: string;
-    osm_id: number;
-    lat: string;
-    lon: string;
-    display_name: string;
-    name: string;
-    class: string;
-    type: string;
-    importance: number;
-    addresstype: string;
-    place_rank: number;
-    address: {
-      house_number?: string;
-      road?: string;
-      city?: string;
-      county?: string;
-      state?: string;
-      postcode?: string;
-      country?: string;
-    };
-    boundingbox: [string, string, string, string];
-  };
+  geocodeResult: GeocodeResult['results'][0]; // Single result from Google Maps
   onSelect: () => void;
-  searchMode: SearchMode; // Add this prop
+  searchMode: SearchMode;
 };
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const getAddressType = (types?: string[]): string => {
+  if (!types || types.length === 0) {
+    return 'Address';
+  }
+
+  // Check for common types users understand
+  if (types.includes('street_address')) return 'Street Address';
+  if (types.includes('premise')) return 'Building';
+  if (types.includes('airport')) return 'Airport';
+  if (types.includes('park')) return 'Park';
+  if (types.includes('route')) return 'Road';
+  if (types.includes('locality')) return 'City';
+  if (types.includes('neighborhood')) return 'Neighborhood';
+  if (types.includes('postal_code')) return 'Zip Code';
+  
+  // Default fallback
+  return 'Address';
+};
 
 const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect, searchMode }) => {
+  const addressType = getAddressType(geocodeResult.types);
+
   return (
     <div className="card shadow-sm">
       <div className="card-body p-2 d-flex justify-content-between align-items-center" style={{ height: '90px' }}>
-        <div className="align-self-start">
-          <h5 className="card-title mb-0 p-1 start-0 top-0">{capitalize(geocodeResult.addresstype)}</h5>
+        <div className="align-self-start p-1">
+          <h5 className="card-title">{addressType}</h5>
           <h6 className="card-subtitle text-muted" style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden'
-          }}>{geocodeResult.display_name}
+          }}>{geocodeResult.formatted_address}
           </h6>
         </div>
         <button
@@ -54,7 +50,7 @@ const AddressCard: React.FC<GeocodeProps> = ({ geocodeResult, onSelect, searchMo
           }`}
           style={{height: '60px', width: '100px'}}
           onClick={() => onSelect()}
-          aria-label={`View reports for ${geocodeResult.display_name}`}
+          aria-label={`View reports for ${geocodeResult.formatted_address}`}
         >
           See reports →
         </button>

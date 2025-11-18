@@ -10,6 +10,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.2",
     "busboy": "^1.6.0",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",

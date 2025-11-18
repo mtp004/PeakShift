@@ -40,26 +40,17 @@ export type RatesAPIResponse = {
 export async function fetchAddressElectricRates(
   address: string
 ): Promise<RatesAPIResponse | null> {
-  const API_KEY = import.meta.env.VITE_OPENEI_API_KEY;
-  
-  if (!API_KEY) {
-    return null;
-  }
+  const params = new URLSearchParams({
+    address: address,
+    sector: 'Residential',
+    limit: '50',
+  });
 
-  const url = new URL('https://api.openei.org/utility_rates');
-  url.searchParams.set('version', 'latest');
-  url.searchParams.set('format', 'json');
-  url.searchParams.set('api_key', API_KEY);
-  url.searchParams.set('address', address);
-  url.searchParams.set('sector', 'Residential');
-  url.searchParams.set('limit', '50');
-  url.searchParams.set('approved', 'false');
-  url.searchParams.set('orderby', 'startdate');
-  url.searchParams.set('direction', 'desc');
-  url.searchParams.set('detail', 'full');
+  // Update to your deployed function URL
+  const url = `https://utilityrates-s43aur27va-uc.a.run.app?${params.toString()}`;
 
   try {
-    const response = await fetch(url.toString());
+    const response = await fetch(url);
     if (!response.ok) return null;
     const data: RatesAPIResponse = await response.json();
     return data;

@@ -14,7 +14,7 @@ function SearchPage() {
   const location = useLocation();
 
   const [address, setAddress] = useState(location.state?.addressQuery || '');
-  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult[] | null>(null);
+  const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>(location.state?.searchMode || 'electric');
   const navigate = useNavigate();
@@ -40,14 +40,17 @@ function SearchPage() {
     }
   }, [address]);
 
-  function onSelectAddress(geocodeResult: GeocodeResult) {
-    const encodedAddress = encodeURIComponent(geocodeResult.display_name);
+  function onSelectAddress(result: GeocodeResult['results'][0]) {
+    const lat = result.geometry.location.lat;
+    const lng = result.geometry.location.lng;
+    const encodedAddress = encodeURIComponent(result.formatted_address);
+    
     if (searchMode === 'electric') {
       navigate(`/search/report?address=${encodedAddress}`, { 
         state: { addressQuery: address, searchMode: searchMode } 
       });
     } else {
-      navigate(`/search/questionaire?address=${encodedAddress}&lat=${geocodeResult.lat}&lon=${geocodeResult.lon}`, { 
+      navigate(`/search/questionaire?address=${encodedAddress}&lat=${lat}&lon=${lng}`, { 
         state: { addressQuery: address, searchMode: searchMode } 
       });
     }
@@ -118,34 +121,30 @@ function SearchPage() {
                 <div className="d-flex justify-content-center py-3">
                   <div className="spinner-border" role="status"></div>
                 </div>
-              ) : geocodeResult && geocodeResult.length === 0 ? (
+              ) : geocodeResult?.status === 'OK' && geocodeResult.results.length === 0 ? (
                 <div className="px-3 py-2 text-muted text-center">
-                  No address match in{' '}
-                  <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">
-                    OpenStreetMap
-                  </a>
-                  's database
+                  No address match found
                 </div>
-              ) : geocodeResult ? (
-                geocodeResult.map(result => (
+              ) : geocodeResult?.status === 'OK' && geocodeResult.results.length > 0 ? (
+                geocodeResult.results.map(result => (
                   <AddressCard
                     key={result.place_id}
                     geocodeResult={result}
                     onSelect={() => onSelectAddress(result)}
-                    searchMode={searchMode}  // Pass searchMode here
+                    searchMode={searchMode}
                   />
                 ))
+              ) : geocodeResult?.status !== 'OK' ? (
+                <div className="px-3 py-2 text-muted text-center">
+                  Geocoding error: {geocodeResult?.error_message || geocodeResult?.status}
+                </div>
               ) : null}
             </div>
           )}
         </div>
         <div className="text-center mt-3">
           <small className="text-muted">
-            Powered by{' '}
-            <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">
-              Nominatim
-            </a>{' '}
-            & OpenStreetMap
+            Powered by Google Maps
           </small>
         </div>
       </div>

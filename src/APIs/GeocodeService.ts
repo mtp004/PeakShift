@@ -1,58 +1,64 @@
 export type GeocodeResult = {
-  place_id: number;
-  licence: string;
-  osm_type: string;
-  osm_id: number;
-  lat: string;
-  lon: string;
-  display_name: string;
-  name: string;
-  class: string;
-  type: string;
-  importance: number;
-  addresstype: string;
-  place_rank: number;
-  address: {
-    house_number?: string;
-    road?: string;
-    city?: string;
-    county?: string;
-    state?: string;
-    postcode?: string;
-    country?: string;
-  };
-  boundingbox: [string, string, string, string];
+  results: Array<{
+    formatted_address: string;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+      location_type: string;
+      bounds?: {
+        northeast: { lat: number; lng: number };
+        southwest: { lat: number; lng: number };
+      };
+      viewport: {
+        northeast: { lat: number; lng: number };
+        southwest: { lat: number; lng: number };
+      };
+    };
+    place_id: string;
+    address_components: Array<{
+      long_name: string;
+      short_name: string;
+      types: string[];
+    }>;
+    types: string[];
+    navigation_points?: Array<{
+      location: {
+        latitude: number;
+        longitude: number;
+      };
+    }>;
+  }>;
+  status: string;
+  error_message?: string;
 };
 
-// Reusable async function to query Nominatim
-export async function fetchGeocode(address: string): Promise<GeocodeResult[]> {
-  if (!address.trim()) return [];
+// Async function to query Google Maps Geocoding via your backend
+export async function fetchGeocode(address: string): Promise<GeocodeResult | null> {
+  if (!address.trim()) return null;
 
-  const params = new URLSearchParams({
-    format: 'json',
-    addressdetails: '1',
-    limit: '2',
-    q: address,
-    countrycodes: 'us'
-  });
-
-  const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
+  const params = new URLSearchParams({ address });
+  // Update to your new Cloud Run URL
+  const url = `https://geocode-s43aur27va-uc.a.run.app?${params.toString()}`;
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'PeakShift-Electric-Usage-Optimizer/1.0 (your-email@example.com)',
-      },
-    });
-
+    const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const data: GeocodeResult[] = await res.json();
-    return data; // Always return the array, even if empty
+    const data: GeocodeResult = await res.json();
+    console.log('Raw Geocode Response:', JSON.stringify(data, null, 2));
+    // Check if geocoding was successful
+    if (data.status !== 'OK') {
+      console.error('Geocoding failed:', data.status, data.error_message);
+      return null;
+    }
+
+    return data;
   } catch (error) {
-    console.error('Geocode fetch error:', error);
-    return []; // Return empty array on error
+    console.error("Geocode fetch error:", error);
+    return null;
   }
 }
