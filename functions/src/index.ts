@@ -4,7 +4,6 @@ import Busboy from 'busboy';
 import { processImageWithOcr, OcrSpaceResponse } from './OCR-helper';
 import { v2 as cloudinary } from 'cloudinary';
 export { utilityRates } from './utilityRates';
-export { geocode } from './geocode';
 
 initializeApp();
 
