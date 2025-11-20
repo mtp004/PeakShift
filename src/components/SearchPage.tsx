@@ -114,7 +114,7 @@ function SearchPage() {
 
       if (searchMode === 'electric') {
         navigate(`/search/report?address=${encodedAddress}`, {
-          state: { addressQuery: formattedAddress, searchMode },
+          state: { addressQuery: address, searchMode },
         });
       } else {
         if (!location) {
@@ -128,7 +128,7 @@ function SearchPage() {
         navigate(
           `/search/questionaire?address=${encodedAddress}&lat=${lat}&lon=${lng}`,
           {
-            state: { addressQuery: formattedAddress, searchMode },
+            state: { addressQuery: address, searchMode },
           }
         );
       }
