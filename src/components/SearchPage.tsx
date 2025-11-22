@@ -25,7 +25,7 @@ function SearchPage() {
   // null = no search yet / cleared
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [pLibImported, setPlacesReady] = useState(false);
+  const [pLibImported, setLibReady] = useState(false);
 
   // Session token for billing grouping
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
@@ -74,9 +74,11 @@ function SearchPage() {
     (async () => {
       try {
         await google.maps.importLibrary('places');
-        if (!cancelled) setPlacesReady(true);
+        if (!cancelled) {
+          setLibReady(true);
+        }
       } catch (err) {
-        console.error('Error loading places library', err);
+        console.error('Error loading GoogleMap library', err);
       }
     })();
 
@@ -165,6 +167,17 @@ function SearchPage() {
       </ol>
     </>
   );
+
+  if (!pLibImported) {
+    return (
+      <div className="h-100 d-flex justify-content-center align-items-center bg-light">
+        <div className="d-flex flex-column align-items-center">
+          <div className="spinner-border mb-3" role="status"> </div>
+          <span className="text-muted">Loading Google Maps...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-100 d-flex justify-content-center align-items-center bg-light position-relative">
