@@ -148,7 +148,7 @@ export default function UploadPage({ enableTooltip = true, backgroundClass = 'bg
       </div>
       {compressing ? (
         <div className="d-flex align-items-center">
-          <span>💔🥀 I said 1MB only, compressing nonetheless...</span>
+          <span>Compressing file...</span>
           <div className="spinner-border spinner-border-sm me-2" role="status"></div>
         </div>
       ) : uploading ? (
