@@ -65,7 +65,7 @@ export default function UploadPage({ enableTooltip = true, backgroundClass = 'bg
         if (compressed) {
           setCompressedFile(compressed);
         } else {
-          setError('Dawg this file too large to compress under 1MB 💀');
+          setError('File too large to compress under 1MB');
         }
       } catch (err: any) {
         setError(`Compression failed: ${err.message}`);
